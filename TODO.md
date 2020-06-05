@@ -46,6 +46,40 @@ void construct( T* p, cosnt T& val );
 void destroy( T* p );
 ```
 
+### 使用例：
+```cpp
+class Ctemp {
+public:
+	int a;
+	char ch;
+	
+	Ctemp(const Ctemp& src):a(src.a),ch(src.ch) {} 
+	Ctemp(int _a, char _ch):a(_a),ch(_ch) {}
+};
+
+int main(void) {
+	c3::allocator<Ctemp> alloc;
+	// 为 pCtemp 分配 5 个 Ctemp 大小的内存 
+	Ctemp* pCtemp = alloc.allocate(5);
+	// 分别构造对象 
+	for(int i=0; i<5; ++i) {
+		alloc.construct(pCtemp + i, Ctemp(i, '0' + (char)i));
+	} 
+	
+	
+	// 将 pCtemp 作为一个长度为 5 的 Ctemp 类型数组使用 
+	
+	
+	// 销毁 pCtemp
+	for(int i=0; i<5; ++i) {
+	    alloc.destroy(pCtemp + i);
+	} 
+	// 取消 pCtemp 的内存分配 
+	alloc.deallocate(pCtemp, 5);
+	return 0;
+} 
+```
+
 ## `c3::cin` @ `<iostream>`
 重定向到 `std::cin`
 
