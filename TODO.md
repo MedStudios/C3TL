@@ -20,7 +20,7 @@
 - 已测试的功能正常的 API 函数，请注释起来
 - 有问题的或实现遇到困难的 API 函数，请在请在函数前加上 `[!!!!!]`
 
-### `c3::allocator` @ `<memory>`
+## `c3::allocator` @ `<memory.h>`
 
 模板定义：
 ```cpp
@@ -80,16 +80,13 @@ int main(void) {
 } 
 ```
 
-## `c3::cin` @ `<iostream>`
-重定向到 `std::cin`
+## `<iostream.h>`
+其内容均重定向到 STL 的 `iostream`
 
-## `c3::cout` @ `<iostream>`
-重定向到 `std::cout`
-
-## `c3::reverse_iterator` @ `<iterator>`
+## `c3::reverse_iterator` @ `<iterator.h>`
 重定向到 `std::reverse_iterator`
 
-## `c3::basic_string` @ `<string>`
+## `c3::basic_string` @ `<string.h>`
 
 模板定义：
 ```cpp
@@ -603,7 +600,7 @@ c3::wstring to_wstring( double value );
 c3::wstring to_wstring( long double value );
 ```
 
-## `c3::vector` @ `<vector>`
+## `c3::vector` @ `<vector.h>`
 
 模板定义：
 ```cpp
@@ -771,7 +768,7 @@ bool operator>=( const c3::vector<T,Alloc>& lhs, const c3::vector<T,Alloc>& rhs 
 
 
 
-## `c3::deque` @ `<deque>`
+## `c3::deque` @ `<deque.h>`
 
 > 注：`deque` 是双向队列，两端都支持插入和弹出操作，这说明 `deque` 同时支持 FIFO 的队列操作和 LIFO 的栈操作，STL 中将其封装成为单独的 `stack` 类模板和 `queue` 类模板。
 
@@ -940,7 +937,7 @@ bool operator>=( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
 
 
 
-## `c3::stack` @ `<stack>`
+## `c3::stack` @ `<stack.h>`
 
 模板定义：
 ```cpp
@@ -1028,7 +1025,7 @@ bool operator>=( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
 
 
 
-## `<algorithm>`
+## `<algorithm.h>`
 
 API:
 ```cpp
