@@ -7,10 +7,10 @@ namespace c3
 {
 
 // 未实现部分的重定向
-typedef istream    std::istream;
-typedef ostream    std::ostream;
-typedef wistream   std::wistream;
-typedef wostream   std::wostream;
+typedef std::istream    istream;
+typedef std::ostream    ostream;
+typedef std::wistream   wistream;
+typedef std::wostream   wostream;
 
 istream cin = std::cin;
 ostream cout = std::cout;
