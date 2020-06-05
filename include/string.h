@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include "memory.h"
 #include "iterator.h"
+#include "iostream.h"
 
 namespace c3
 {
@@ -319,7 +320,6 @@ public:
     // 寻找等于 ch 的最后字符。搜索始于 pos 向前。
     size_type find_last_of( value_type ch, size_type pos = npos ) const;
 
-
     /*
     与上同，除了找到的是最后一个不属于字符串中任意字符或特定字符。
     */
@@ -328,6 +328,119 @@ public:
     size_type find_last_not_of( const_pointer s, size_type pos = npos ) const;
     size_type find_last_not_of( value_type ch, size_type pos = npos ) const;
 
+    template< class _CharT, class _Alloc >
+    friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    template<class _CharT, class _Alloc>
+    friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, _CharT rhs );
+    template< class _CharT, class _Alloc >
+    friend c3::basic_string<_CharT,_Alloc> operator+( const _CharT* lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend c3::basic_string<_CharT,_Alloc> operator+( _CharT lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+
+    // 按照字典顺序比较字符串中的值 
+    template< class _CharT, class _Alloc >
+    friend bool operator==( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator==( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator!=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator!=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator<( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator<( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator<=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator<=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator>( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator>( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator>=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    template< class _CharT, class _Alloc >
+    friend bool operator>=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+
+    template <class _CharT, class _Alloc >
+    friend c3::basic_ostream<_CharT>& operator<<(c3::basic_ostream<_CharT>& os, const c3::basic_string<_CharT, _Alloc>& str);
+    template <class _CharT, class _Alloc>
+    friend c3::basic_istream<_CharT>& operator>>(c3::basic_istream<_CharT>& is, c3::basic_string<_CharT, _Alloc>& str);
+
+    template< class _CharT, class _Alloc >
+    friend c3::basic_istream<_CharT>& getline( c3::basic_istream<_CharT>& input, c3::basic_string<_CharT,Alloc>& str, _CharT delim );
+
+    // 转译字符串 str 中的有符号整数值。
+    // 舍弃所有空白符（以调用 isspace() 鉴别），直到找到首个非空白符，然后取尽可能多的字符组成底 n （其中 n=base ）的整数表示，并将它们转换成一个整数值。合法的整数值由下列部分组成： 
+    //  (可选)正或负号
+    //  (可选)指示八进制底的前缀（ 0 ）（仅当底为 8 或 ​0​ 时应用）
+    //  (可选)指示十六进制底的前缀（ 0x 或 0X ）（仅当底为 16 或 ​0​ 时应用） 
+    //  一个数字序列 
+    // 底的合法集是 {0,2,3,...,36} 。合法数字集对于底 2 整数是 {0,1}，对于底3整数是 {0,1,2} ，以此类推。对于大于 10 的底，合法数字包含字母字符，从对于底 11 整数的 Aa 到对于底36整数的 Zz 。忽略字符大小写。 
+    // 若 base 为 ​0​ ，则自动检测数值进制：若前缀为 0 ，则底为八进制，若前缀为 0x 或 0X ，则底为十六进制，否则底为十进制。
+    // 若 pos 不是空指针，则对于转换函数为内部的指针 ptr 将接受 str.c_str() 中首个未转换字符的地址，然后计算该字符的下标并存储之于 *pos ，给出转换处理的字符数。 
+    friend int stoi( const c3::string& str, size_t* pos = 0, int base = 10 );
+    friend int stoi( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    friend long stol( const c3::string& str, size_t* pos = 0, int base = 10 );
+    friend long stol( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    friend long long stoll( const c3::string& str, size_t* pos = 0, int base = 10 );
+    friend long long stoll( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+
+    // 转译字符串 str 中的无符号整数值。
+    friend unsigned long stoul( const c3::string& str, c3::size_t* pos = 0, int base = 10 );
+    friend unsigned long stoul( const c3::wstring& str, c3::size_t* pos = 0, int base = 10 );
+    friend unsigned long long stoull( const c3::string& str, c3::size_t* pos = 0, int base = 10 );
+    friend unsigned long long stoull( const c3::wstring& str, c3::size_t* pos = 0, int base = 10 );
+
+    // 转译字符串 str 中的浮点值。
+    // 函数会舍弃任何空白符（由 c3::isspace() 确定），直至找到首个非空白符。然后它会取用尽可能多的字符，以构成合法的浮点数表示，并将它们转换成浮点值。合法的浮点值可以为下列之一：
+    //     十进制浮点数表达式。它由下列部分组成： 
+    //         (可选) 正或负号
+    //         非空的十进制数字序列，可选地包含一个小数点字符（由当前的 C 本地环境确定）（定义有效数字）
+    //         (可选) e 或 E ，并跟随可选的正或负号，以及非空十进制数字序列（以 10 为底定义指数） 
+    //     二进制浮点数表达式。它由下列部分组成： 
+    //         (可选) 正或负号
+    //         0x 或 0X
+    //         非空的十六进制数字序列，选地包含一个小数点字符（由当前的 C 本地环境确定）（定义有效数字）
+    //         (可选) p 或 P ，并跟随可选的正或负号，以及非空十进制数字序列（以 2 为底定义指数） 
+    //     无穷大表达式。它由下列部分组成： 
+    //         (可选) 正或负号
+    //         INF 或 INFINITY ，忽略大小写 
+    //     非数（NaN）表达式。它由下列部分组成： 
+    //         (可选) 正或负号
+    //         NAN 或 NAN(char_sequence) ，忽略 NAN 部分的大小写。 char_sequence 只能由数字、拉丁字母和下划线构成。结果是一个安静的 NaN 浮点值。 
+    // 若 pos 不是空指针，则对于转换函数为内部的指针 ptr 将接受 str.c_str() 中首个未转换字符的地址，然后计算该字符的下标并存储之于 *pos ，给出转换处理的字符数。 
+    friend float stof( const c3::string& str, size_t* pos = 0 );
+    friend float stof( const c3::wstring& str, size_t* pos = 0 );
+    friend double stod( const c3::string& str, size_t* pos = 0 );
+    friend double stod( const c3::wstring& str, size_t* pos = 0 );
+    friend long double stold( const c3::string& str, size_t* pos = 0 );
+    friend long double stold( const c3::wstring& str, size_t* pos = 0 );
+
+    // 将数转换成 char 字符串
+    friend c3::string to_string( int value );
+    friend c3::string to_string( long value );
+    friend c3::string to_string( long long value );
+    friend c3::string to_string( unsigned value );
+    friend c3::string to_string( unsigned long value );
+    friend c3::string to_string( unsigned long long value );
+    friend c3::string to_string( float value );
+    friend c3::string to_string( double value );
+    friend c3::string to_string( long double value );
+
+    // 将数转换成 wchar_t 字符串
+    friend c3::wstring to_wstring( int value );
+    friend c3::wstring to_wstring( long value );
+    friend c3::wstring to_wstring( long long value );
+    friend c3::wstring to_wstring( unsigned value );
+    friend c3::wstring to_wstring( unsigned long value );
+    friend c3::wstring to_wstring( unsigned long long value );
+    friend c3::wstring to_wstring( float value );
+    friend c3::wstring to_wstring( double value );
+    friend c3::wstring to_wstring( long double value );
 };
 
 

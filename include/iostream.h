@@ -7,10 +7,16 @@ namespace c3
 {
 
 // 未实现部分的重定向
-typedef std::istream    istream;
-typedef std::ostream    ostream;
-typedef std::wistream   wistream;
-typedef std::wostream   wostream;
+
+template <class T>
+using basic_istream = std::basic_istream<T>;
+template <class T>
+using basic_ostream = std::basic_ostream<T>;
+
+using istream = std::istream;
+using ostream = std::ostream;
+using wistream = std::wistream;
+using wostream = std::wostream;
 
 istream cin = std::cin;
 ostream cout = std::cout;
