@@ -177,10 +177,10 @@ Allocator get_allocator() const;
 
 
 // 返回到位于指定位置 pos 的字符的引用。
-ChatT& at( size_t pos );
-ChatT& operator[]( size_t pos );
-const ChatT& at( size_t pos ) const;
-const ChatT& operator[]( size_t pos ) const;
+CharT& at( size_t pos );
+CharT& operator[]( size_t pos );
+const CharT& at( size_t pos ) const;
+const CharT& operator[]( size_t pos ) const;
 
 
 // 返回首字符的引用
