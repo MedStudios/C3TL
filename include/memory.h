@@ -1,5 +1,5 @@
-#ifndef _ALLOCATOR_H_
-#define _ALLOCATOR_H_
+#ifndef _C3TL_MEMORY_H_
+#define _C3TL_MEMORY_H_
 
 #include <stddef.h>
 
@@ -53,4 +53,4 @@ inline void allocator<T>::destroy(T* p) {
 
 } // namespace c3
 
-#endif // _ALLOCATOR_H_
+#endif // _C3TL_MEMORY_H_
