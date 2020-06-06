@@ -18,15 +18,15 @@ using ostream = std::ostream;
 using wistream = std::wistream;
 using wostream = std::wostream;
 
-istream cin = std::cin;
-ostream cout = std::cout;
-ostream cerr = std::cerr;
-ostream clog = std::clog;
+istream cin(std::cin.rdbuf());
+ostream cout(std::cout.rdbuf());
+ostream cerr(std::cerr.rdbuf());
+ostream clog(std::clog.rdbuf());
 
-wistream wcin = std::wcin;
-wostream wcout =  std::wcout;
-wostream wcerr = std::wcerr;
-wostream wclog = std::wclog;
+wistream wcin(std::wcin.rdbuf());
+wostream wcout(std::wcout.rdbuf());
+wostream wcerr(std::wcerr.rdbuf());
+wostream wclog(std::wclog.rdbuf());
 
 } // namespace c3
 

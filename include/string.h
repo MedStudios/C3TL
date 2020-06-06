@@ -9,8 +9,16 @@
 namespace c3
 {
 
-
 template < class CharT, class Allocator = c3::allocator<CharT> >
+class basic_string;
+
+typedef basic_string<char>     string;
+typedef basic_string<wchar_t>  wstring;
+typedef basic_string<char16_t> u16string;
+typedef basic_string<char32_t> u32string;
+
+
+template < class CharT, class Allocator >
 class basic_string {
 
 public:
@@ -50,7 +58,7 @@ public:
     // 构造拥有 count 个字符 ch 的串，使用 alloc 作为内存分配器
     basic_string( size_type count, value_type ch, const Allocator& alloc = Allocator() );
     // 以 other 的子串 [pos, pos+count) 构造串。若 count == npos 或未指定 count 或越过字符串的结尾，则产生的子串为 [pos, other.size())。
-    basic_string( const basic_string& other, size_type pos, size_type count = c3::basic_string::npos, const Allocator& alloc = Allocator() );
+    basic_string( const basic_string& other, size_type pos, size_type count = npos, const Allocator& alloc = Allocator() );
     // 以 s 的首 count 个字符构造串。s 能包含 '\0'。串的长度为 count。若 [s, s + count) 不是合法范围则行为未定义。
     basic_string( const_pointer s, size_type count, const Allocator& alloc = Allocator() );
     // 用以 '\0' 结尾的 CharT 数组初始化串。（一般用双引号括起来的字符串初始化 string 即调用该函数）
@@ -371,7 +379,7 @@ public:
     friend c3::basic_istream<_CharT>& operator>>(c3::basic_istream<_CharT>& is, c3::basic_string<_CharT, _Alloc>& str);
 
     template< class _CharT, class _Alloc >
-    friend c3::basic_istream<_CharT>& getline( c3::basic_istream<_CharT>& input, c3::basic_string<_CharT,Alloc>& str, _CharT delim );
+    friend c3::basic_istream<_CharT>& getline( c3::basic_istream<_CharT>& input, c3::basic_string<_CharT, _Alloc>& str, _CharT delim );
 
     // 转译字符串 str 中的有符号整数值。
     // 舍弃所有空白符（以调用 isspace() 鉴别），直到找到首个非空白符，然后取尽可能多的字符组成底 n （其中 n=base ）的整数表示，并将它们转换成一个整数值。合法的整数值由下列部分组成： 
@@ -390,10 +398,10 @@ public:
     friend long long stoll( const c3::wstring& str, size_t* pos = 0, int base = 10 );
 
     // 转译字符串 str 中的无符号整数值。
-    friend unsigned long stoul( const c3::string& str, c3::size_t* pos = 0, int base = 10 );
-    friend unsigned long stoul( const c3::wstring& str, c3::size_t* pos = 0, int base = 10 );
-    friend unsigned long long stoull( const c3::string& str, c3::size_t* pos = 0, int base = 10 );
-    friend unsigned long long stoull( const c3::wstring& str, c3::size_t* pos = 0, int base = 10 );
+    friend unsigned long stoul( const c3::string& str, size_t* pos = 0, int base = 10 );
+    friend unsigned long stoul( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    friend unsigned long long stoull( const c3::string& str, size_t* pos = 0, int base = 10 );
+    friend unsigned long long stoull( const c3::wstring& str, size_t* pos = 0, int base = 10 );
 
     // 转译字符串 str 中的浮点值。
     // 函数会舍弃任何空白符（由 c3::isspace() 确定），直至找到首个非空白符。然后它会取用尽可能多的字符，以构成合法的浮点数表示，并将它们转换成浮点值。合法的浮点值可以为下列之一：
@@ -457,10 +465,7 @@ public:
 
 
 
-typedef basic_string<char>     c3::string;
-typedef basic_string<wchar_t>  c3::wstring;
-typedef basic_string<char16_t> c3::u16string;
-typedef basic_string<char32_t> c3::u32string;
+
 
 } // namespace c3
 
