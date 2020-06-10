@@ -1,12 +1,15 @@
 #ifndef _C3TL_ALGORITHM_H_
 #define _C3TL_ALGORITHM_H_
 
+#include "utility.h"
+
 namespace c3
 {
 
-
-template <class T>
-void swap ( T& a, T& b );
+// C++11 起 swap 函数定义于 <utility>
+// 
+// template <class T>
+// void swap ( T& a, T& b );
 
 template< class RandomIt >
 void sort( RandomIt first, RandomIt last );
@@ -72,7 +75,7 @@ const T& min( const T& a, const T& b, Compare comp );
 
 
 
-
+/*
 template <class T>
 inline void swap ( T& a, T& b )
 {
@@ -80,6 +83,7 @@ inline void swap ( T& a, T& b )
   a = b;
   b = c;
 }
+*/
 
 template< class RandomIt >
 void sort(RandomIt first, RandomIt last)
