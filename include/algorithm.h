@@ -96,7 +96,7 @@ void sort(RandomIt first, RandomIt last)
         RandomIt pe = last - 1;  //pe指向倒数第二个元素
         while (ps < pe)
         {
-            while (*ps < *first) && ps < pe)  //右移
+            while (*ps < *first && ps < pe)  //右移
             {
                 ++ps;
             }
@@ -275,7 +275,7 @@ ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value ) {
     while (lo < hi)
     {
 		unsigned int mid = (lo + hi) / 2;
-        if (first[mid] <= value)
+        if (first[mid] < value)
             lo = mid + 1;
         else
 			hi = mid;
@@ -302,6 +302,7 @@ ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value, Compare 
     }
     return first + pos;
 }
+
 template< class ForwardIt, class T >
 bool binary_search( ForwardIt first, ForwardIt last, const T& value ) {
     if (last <= first)
@@ -312,11 +313,10 @@ bool binary_search( ForwardIt first, ForwardIt last, const T& value ) {
     while (lo < hi)
     {
 		unsigned int mid = (lo + hi) / 2;
-        if (first[mid] <= value)
+        if (first[mid] < value)
             lo = mid + 1;
         else
 			hi = mid;
-        pos = lo;
     }
     if (first[lo] == value)
         return true;
