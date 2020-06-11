@@ -33,3 +33,9 @@
 
 # VS Code Files
 */.vscode/
+
+# CMake Files
+/cmake-build-debug/
+
+# CLion Files
+/.idea/
