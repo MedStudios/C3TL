@@ -1,3 +1,8 @@
+//
+// Created on 2020 - 06 - 03
+// Written by: SYX
+//
+
 #ifndef _C3TL_STRING_H_
 #define _C3TL_STRING_H_
 
@@ -39,85 +44,249 @@ public:
     typedef c3::reverse_iterator<const_iterator>     const_reverse_iterator;
 
 public:
-    static const size_type npos = -1;		
-
+    static const size_type npos = -1;
+private:
+    pointer _data;
+    size_t _size;
+    Allocator _alloc;
 public:
+    size_type size() const {return _size;}
+    size_type length() const {return _size;}
+    const_pointer data() const { return _data; }
+    const_pointer c_str() const { return _data; }
 
     // 构造空串
-    basic_string();
+    basic_string()
+    {
+        _size=0;
+        _data=NULL;
+        this->_alloc=Allocator();
+    }
     // 构造空串，使用 alloc 作为内存分配器
-    explicit basic_string( const Allocator& alloc );
+    explicit basic_string( const Allocator& alloc )
+    {
+        _size=0;
+        _data=NULL;
+        this->_alloc=alloc;
+    }
     // 复制构造函数
-    basic_string( const basic_string& other );
+    basic_string( const basic_string& other )
+    {
+        _data=this->_alloc.allocate(other.size());
+        _size= other.size();
+                for(size_t i=0; i < _size; i++)
+                {
+                    _data[i]=other._data[i];
+                }
+
+    }
     // 复制构造函数，使用 alloc 作为内存分配器
-    basic_string( const basic_string& other, const Allocator& alloc );
+    basic_string( const basic_string& other, const Allocator& alloc )
+    {
+        this->_alloc=alloc;
+        _data=this->_alloc.allocate(other.size());
+        _size= other.size();
+       for(size_t i=0; i < _size; i++)
+           alloc.construct(_data[i], other.data()[i]);
+    }
     // （可选）移动构造函数
-    // basic_string( basic_string&& other );
+    //
+    // 'basic_string( basic_string&& other );
     // （可选）移动构造函数，使用 alloc 作为内存分配器
     // basic_string( basic_string&& other, const Allocator& alloc );
     // 构造拥有 count 个字符 ch 的串，使用 alloc 作为内存分配器
-    basic_string( size_type count, value_type ch, const Allocator& alloc = Allocator() );
+    //basic_string( size_type count, value_type ch, const Allocator& alloc = Allocator() )
     // 以 other 的子串 [pos, pos+count) 构造串。若 count == npos 或未指定 count 或越过字符串的结尾，则产生的子串为 [pos, other.size())。
-    basic_string( const basic_string& other, size_type pos, size_type count = npos, const Allocator& alloc = Allocator() );
+    basic_string( const basic_string& other, size_type pos, size_type count = npos, const Allocator& alloc = Allocator() )
+    {
+        if(count==-1||pos+count> other.size())
+        {
+            _data=alloc.allocate(other.size() - pos);
+            for(int i=0;i< other.size() - pos; i++)
+            {
+                alloc.construct(_data[i], other.data()[pos + i]);
+            }
+
+        } else
+        {
+            _data=alloc.allocate(count);
+            for(int i=0;i<count;i++)
+            {
+                alloc.construct(_data[i], other.data()[pos + i]);
+            }
+
+        }
+    }
     // 以 s 的首 count 个字符构造串。s 能包含 '\0'。串的长度为 count。若 [s, s + count) 不是合法范围则行为未定义。
-    basic_string( const_pointer s, size_type count, const Allocator& alloc = Allocator() );
+    basic_string( const_pointer s, size_type count, const Allocator& alloc = Allocator() )
+    {
+        if(count<1)return;
+        else{
+            _data=alloc.allocate(count);
+                    for(int i=0;i<count;i++)
+                    {
+                        alloc.construct(_data[i], s[i]);
+                    }
+        }
+    }
     // 用以 '\0' 结尾的 CharT 数组初始化串。（一般用双引号括起来的字符串初始化 string 即调用该函数）
-    basic_string( const_pointer s, const Allocator& alloc = Allocator() );
+    basic_string( const_pointer s, const Allocator& alloc = Allocator() )
+    {
+        int count=0;
+        int i=0;
+        while(s[i]!='\0')
+        {
+            count++;
+            i++;
+        }
+        _data=alloc.allocate(count);
+        for(int i=0;i<count;i++)
+        {
+            alloc.construct(_data[i], s[i]);
+        }
+    }
 
 
     // 以 count 个 ch 替换本串。返回 *this
-    basic_string& assign( size_type count, value_type ch );
+    basic_string& assign( size_type count, value_type ch )
+    {
+        pointer tmp = this->_alloc.allocate(count);
+        if(tmp==NULL)
+        return *this;
+        for(size_t i=0;i<count;i++)
+        {
+            _alloc.construct(tmp[i], ch);
+        }
+        _alloc.deallocate(_data, _size);
+        this->_data=tmp;
+        this->_size=count;
+        return *this;
+    }
     // 相当于 assign(1, ch)。返回 *this
-    basic_string& operator=( value_type ch );
+    basic_string& operator=( value_type ch )
+    {
+        pointer tmp;
+        tmp=_alloc.allocate(1);
+        tmp[0]=ch;
+        _alloc.deallocate(_data, _size);
+        _data=tmp;
+        _size=1;
+
+    }
     // 以 str 的副本替换本串。返回 *this
-    basic_string& assign( const basic_string& str );
-    basic_string& operator=( const basic_string& str );
+    basic_string& assign( const basic_string& str )
+    {
+        _alloc.deallocate(_data, _size);
+        _data=_alloc.allocate(str.size());
+        for(int i=0;i< str.size(); i++)
+        {
+            _alloc.construct(_data[i], str[i]);
+        }
+        return *this;
+    }
+    basic_string& operator=( const basic_string& str )
+    {
+        assign(str);
+    }
     // 以 str 的子串 [pos, pos+count) 替换本串。若请求的子串越过其尾或 count == npos ，则产生的子串是 [pos, str.size())。返回 *this
-    basic_string& assign( const basic_string& str, size_type pos, size_type count );
+    basic_string& assign( const basic_string& str, size_type pos, size_type count )
+    {
+        basic_string(str,pos,count);
+    }
+
     // （可选）移动 str 到本串。返回 *this
     // basic_string& assign( basic_string&& str );
     // basic_string& operator=( basic_string&& str );
     // 以范围 [s, s+count) 中的字符的副本替换本串。此范围能含 '\0'。返回 *this
-    basic_string& assign( const_pointer s, size_type count );
+    basic_string& assign( const_pointer s, size_type count )
+    {
+        pointer tmp;
+        tmp=_alloc.allocate(count);
+        for(int i=0;i<count;i++)
+        {
+            tmp[i]=s[i];
+        }
+        _alloc.deallocate(_data, _size);
+        _data=tmp;
+        _size=count;
+        return *this;
+    }
     // 以 s 的副本替换本串。返回 *this
-    basic_string& assign( const_pointer s );
-    basic_string& operator=( const_pointer s );
+    basic_string& assign( const_pointer s )
+    {
+        pointer tmp;
+        tmp=_alloc.allocate(strlen(s));
+        _alloc.deallocate(_data, _size);
+        for(int i=0;i<strlen(s);i++)
+        {
+            tmp[i]=s[i];
+        }
+        _data=tmp;
+        _size=strlen(s);
+        return *this;
+
+    }
+    basic_string& operator=( const_pointer s )
+    {
+        assign(s);
+        return *this;
+    }
 
 
     // 返回使用的内存分配器
-    Allocator get_allocator() const;
+    Allocator get_allocator() const
+    {
+        return _alloc;
+    }
 
 
     // 返回到位于指定位置 pos 的字符的引用。
-    reference at( size_type pos );
-    reference operator[]( size_type pos );
-    const_reference at( size_type pos ) const;
-    const_reference operator[]( size_type pos ) const;
+    reference at( size_type pos ) {
+        return _data[pos];
+    }
+    reference operator[]( size_type pos ) {
+        return _data[pos];
+    }
+    const_reference at( size_type pos ) const {
+        return _data[pos];
+    }
+    const_reference operator[]( size_type pos ) const {
+        return _data[pos];
+    }
 
 
     // 返回首字符的引用
-    reference front();
+    reference front()
+    {
+        return _data[0];
+    }
     const_reference front() const;
 
 
     // 返回末字符的引用
-    reference back();
+    reference back()
+    {
+        return _data[_size];
+    }
     const_reference back() const;
 
 
-    // 返回字符串的不可修改的原生字符数组。
-    const_pointer data() const;
-    const_pointer c_str() const;
-
-
     // 返回可变或常迭代器，取决于 *this 的常性。
-    iterator begin();
-    const_iterator begin() const;
+    iterator begin() {
+        return _data;
+    }
+    const_iterator begin() const {
+        return _data;
+    }
 
 
     // 返回指向字符串末字符的后一个字符的迭代器。此字符表现为占位符，试图访问它导致未定义行为。 
-    iterator end();
-    const_iterator end() const;
+    iterator end(){
+        return _data + _size;
+    }
+    const_iterator end() const{
+        return _data + _size;
+    }
 
 
     // 返回指向逆转字符串首字符的逆向迭代器。它对应非逆向字符串的末字符。 
@@ -131,16 +300,20 @@ public:
 
 
     // 若串为空则返回 true ，否则返回 false 。
-    bool empty() const;
+    bool empty() const
+    {
+        if(_size == 0)return true;
+        else return false;
+    }
 
 
-    // 返回串的长度，即串中的字符数
-    size_type size() const;
-    size_type length() const;
 
 
     // 返回由于操作系统或库实现限制所能保有的最大串长度（一般为npos）
-    size_type max_size() const;
+    size_type max_size() const
+    {
+        return npos;
+    }
 
 
     // 返回当前已为串分配的保留空间的字符数。（不要与size和length混淆）
@@ -156,13 +329,42 @@ public:
 
 
     // 清空串。
-    void clear();
+    void clear()
+    {
+        _alloc.deallocate(_data, _size);
+    }
 
 
     // 在位置 index 插入 count 个字符 ch 的副本。返回* this
-    basic_string& insert( size_type index, size_type count, value_type ch );
+    basic_string& insert( size_type index, size_type count, value_type ch )
+    {
+        pointer tmp1;
+        tmp1=_data;
+        size_t length;
+        length=_size;
+        _alloc.deallocate(_data, _size);
+        _data=_alloc.allocate(length + count);
+        _size= length + count;
+        for(int i=0;i<index;i++)
+        {
+            _data[i]=tmp1[i];
+        }
+        for(int i=0;i<count;i++)
+        {
+            _data[i + index]=ch;
+        }
+        for(int i=0;i<length-index;i++)
+        {
+            _data[i + index + count]=tmp1[i + index];
+        }
+        return *this;
+
+    }
     // 在位置 index 插入 s 所指向的以 '\0' 结尾的字符串。返回* this
-    basic_string& insert( size_type index, const_pointer s );
+    basic_string& insert( size_type index, const_pointer s )
+    {
+
+    }
     // 在位置 index 插入范围 [s, s+count) 中的字符。范围能含有 '\0'。返回* this
     basic_string& insert( size_type index, const_pointer s, size_type count );
     // 在位置 index 插入 str。返回* this
@@ -184,30 +386,106 @@ public:
 
 
     // 附加给定字符 ch 到字符串尾。 
-    void push_back( value_type ch );
+    void push_back( value_type ch ) {
+        pointer tmp1;
+        size_t length;
+        length = _size;
+        tmp1 = _data;
+        _alloc.deallocate(_data, _size);
+        _alloc.allocate(length + 1);
+        _size = length + 1;
+        for (int i = 0; i < length; i++)
+        {
+            _data[i]=tmp1[i];
+        }
+        _data[length]=ch;
+    }
 
 
     // 从字符串移除末字符。 
-    void pop_back();
+    void pop_back()
+    {
+        pointer tmp1;
+        tmp1=_data;
+        _alloc.deallocate(_data, _size);
+        _data=_alloc.allocate(_size - 1);
+        for(int i=0; i < _size - 1; i++)
+        {
+            _data[i]=tmp1[i];
+        }
+        _size= _size - 1;
+    }
 
 
     /*
     统一返回 *this
     */
     // 后附 count 个 ch 的副本
-    basic_string& append( size_type count, value_type ch );
+    basic_string& append( size_type count, value_type ch )
+    {
+        for(int i=0;i<count;i++)
+        {
+            push_back(ch);
+        }
+        return *this;
+    }
     // 相当于 append(1, ch)。返回 *this
-    basic_string& operator+=( value_type ch );
+    basic_string& operator+=( value_type ch )
+    {
+        push_back(ch);
+        return *this;
+    }
     // 后附 str
-    basic_string& append( const basic_string& str );
-    basic_string& operator+=( const basic_string& str );
+    basic_string& append( const basic_string& str )
+    {
+        pointer tmp1;
+        tmp1=_data;
+        _alloc.deallocate(_data, _size);
+        _data=_alloc.allocate(_size + str.size());
+        for(int i=0; i < _size; i++)
+        {
+            _data[i]=tmp1[i];
+        }
+        for(int i=0;i< str.size(); i++)
+        {
+            _data[_size + i]=str.data()[i];
+        }
+        _size= _size + str.size();
+        return *this;
+
+    }
+    basic_string& operator+=( const basic_string& str )
+    {
+        append(str);
+        return *this;
+    }
     // 后附 str 的子串 [pos, pos+count) 。若请求的子串越过结尾或 count == npos，则后附的子串为 [pos, size()) 。
     basic_string& append( const basic_string& str, size_type pos, size_type count );
     // 后附范围 [s, s + count) 中的字符。此范围能含有 '\0'。
     basic_string& append( const_pointer s, size_type count );
     // 后附 s 所指向的以 '\0' 结尾的字符串。
-    basic_string& append( const_pointer s );
-    basic_string& operator+=( const_pointer s );
+    basic_string& append( const_pointer s )
+    {
+        pointer tmp1;
+        tmp1=_data;
+        _alloc.deallocate(_data, _size);
+        _data=_alloc.allocate(_size + strlen(s));
+        for(int i=0; i < _size; i++)
+        {
+            _data[i]=tmp1[i];
+        }
+        for(int i=0;i<strlen(s);i++)
+        {
+            _data[i + _size]=s[i];
+        }
+        _size= _size + strlen(s);
+        return *this;
+    }
+    basic_string& operator+=( const_pointer s )
+    {
+        append(s);
+        return *this;
+    }
 
 
     /*
@@ -216,7 +494,10 @@ public:
     若 *this 在字典序中后出现于参数所指定的字符序列，则返回负值。 
     */
     // 比较此串与 str。
-    int compare( const basic_string& str ) const;
+    int compare( const basic_string& str ) const
+    {
+
+    }
     // 比较此串的 [pos1, pos1+count1) 子串与 str 。若 count1 > size() - pos1 则子串为 [pos1, size()) 。
     int compare( size_type pos1, size_type count1, const basic_string& str ) const;
     // 比较此串的 [pos1, pos1+count1) 子串与 str 的子串 [pos2, pos2+count2) 。若 count1 > size() - pos1 则第一子串为 [pos1, size()) 。类似地若 count2 > str.size() - pos2 则第二子串为 [pos2, str.size()) 。
@@ -336,50 +617,50 @@ public:
     size_type find_last_not_of( const_pointer s, size_type pos = npos ) const;
     size_type find_last_not_of( value_type ch, size_type pos = npos ) const;
 
-    template< class _CharT, class _Alloc >
-    friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
-    template<class _CharT, class _Alloc>
-    friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, _CharT rhs );
-    template< class _CharT, class _Alloc >
-    friend c3::basic_string<_CharT,_Alloc> operator+( const _CharT* lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend c3::basic_string<_CharT,_Alloc> operator+( _CharT lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template<class _CharT, class _Alloc>
+    //friend c3::basic_string<_CharT,_Alloc> operator+( const c3::basic_string<_CharT,_Alloc>& lhs, _CharT rhs );
+    //template< class _CharT, class _Alloc >
+    //friend c3::basic_string<_CharT,_Alloc> operator+( const _CharT* lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend c3::basic_string<_CharT,_Alloc> operator+( _CharT lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
 
     // 按照字典顺序比较字符串中的值 
-    template< class _CharT, class _Alloc >
-    friend bool operator==( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator==( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator!=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator!=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator<( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator<( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator<=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator<=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator>( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator>( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator>=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
-    template< class _CharT, class _Alloc >
-    friend bool operator>=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator==( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator==( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator!=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator!=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator<( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator<( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator<=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator<=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator>( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator>( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator>=( const c3::basic_string<_CharT,_Alloc>& lhs, const c3::basic_string<_CharT,_Alloc>& rhs );
+    //template< class _CharT, class _Alloc >
+    //friend bool operator>=( const c3::basic_string<_CharT,_Alloc>& lhs, const _CharT* rhs );
 
-    template <class _CharT, class _Alloc >
-    friend c3::basic_ostream<_CharT>& operator<<(c3::basic_ostream<_CharT>& os, const c3::basic_string<_CharT, _Alloc>& str);
-    template <class _CharT, class _Alloc>
-    friend c3::basic_istream<_CharT>& operator>>(c3::basic_istream<_CharT>& is, c3::basic_string<_CharT, _Alloc>& str);
+    //template <class _CharT, class _Alloc >
+    //friend c3::basic_ostream<_CharT>& operator<<(c3::basic_ostream<_CharT>& os, const c3::basic_string<_CharT, _Alloc>& str);
+    //template <class _CharT, class _Alloc>
+    //friend c3::basic_istream<_CharT>& operator>>(c3::basic_istream<_CharT>& is, c3::basic_string<_CharT, _Alloc>& str);
 
-    template< class _CharT, class _Alloc >
-    friend c3::basic_istream<_CharT>& getline( c3::basic_istream<_CharT>& input, c3::basic_string<_CharT, _Alloc>& str, _CharT delim );
+    //template< class _CharT, class _Alloc >
+    //friend c3::basic_istream<_CharT>& getline( c3::basic_istream<_CharT>& input, c3::basic_string<_CharT, _Alloc>& str, _CharT delim );
 
     // 转译字符串 str 中的有符号整数值。
     // 舍弃所有空白符（以调用 isspace() 鉴别），直到找到首个非空白符，然后取尽可能多的字符组成底 n （其中 n=base ）的整数表示，并将它们转换成一个整数值。合法的整数值由下列部分组成： 
@@ -390,18 +671,18 @@ public:
     // 底的合法集是 {0,2,3,...,36} 。合法数字集对于底 2 整数是 {0,1}，对于底3整数是 {0,1,2} ，以此类推。对于大于 10 的底，合法数字包含字母字符，从对于底 11 整数的 Aa 到对于底36整数的 Zz 。忽略字符大小写。 
     // 若 base 为 ​0​ ，则自动检测数值进制：若前缀为 0 ，则底为八进制，若前缀为 0x 或 0X ，则底为十六进制，否则底为十进制。
     // 若 pos 不是空指针，则对于转换函数为内部的指针 ptr 将接受 str.c_str() 中首个未转换字符的地址，然后计算该字符的下标并存储之于 *pos ，给出转换处理的字符数。 
-    friend int stoi( const c3::string& str, size_t* pos = 0, int base = 10 );
-    friend int stoi( const c3::wstring& str, size_t* pos = 0, int base = 10 );
-    friend long stol( const c3::string& str, size_t* pos = 0, int base = 10 );
-    friend long stol( const c3::wstring& str, size_t* pos = 0, int base = 10 );
-    friend long long stoll( const c3::string& str, size_t* pos = 0, int base = 10 );
-    friend long long stoll( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    //friend int stoi( const c3::string& str, size_t* pos = 0, int base = 10 );
+    //friend int stoi( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    //friend long stol( const c3::string& str, size_t* pos = 0, int base = 10 );
+    //friend long stol( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    //friend long long stoll( const c3::string& str, size_t* pos = 0, int base = 10 );
+    //friend long long stoll( const c3::wstring& str, size_t* pos = 0, int base = 10 );
 
     // 转译字符串 str 中的无符号整数值。
-    friend unsigned long stoul( const c3::string& str, size_t* pos = 0, int base = 10 );
-    friend unsigned long stoul( const c3::wstring& str, size_t* pos = 0, int base = 10 );
-    friend unsigned long long stoull( const c3::string& str, size_t* pos = 0, int base = 10 );
-    friend unsigned long long stoull( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    //friend unsigned long stoul( const c3::string& str, size_t* pos = 0, int base = 10 );
+    //friend unsigned long stoul( const c3::wstring& str, size_t* pos = 0, int base = 10 );
+    //friend unsigned long long stoull( const c3::string& str, size_t* pos = 0, int base = 10 );
+    //friend unsigned long long stoull( const c3::wstring& str, size_t* pos = 0, int base = 10 );
 
     // 转译字符串 str 中的浮点值。
     // 函数会舍弃任何空白符（由 c3::isspace() 确定），直至找到首个非空白符。然后它会取用尽可能多的字符，以构成合法的浮点数表示，并将它们转换成浮点值。合法的浮点值可以为下列之一：
@@ -421,7 +702,7 @@ public:
     //         (可选) 正或负号
     //         NAN 或 NAN(char_sequence) ，忽略 NAN 部分的大小写。 char_sequence 只能由数字、拉丁字母和下划线构成。结果是一个安静的 NaN 浮点值。 
     // 若 pos 不是空指针，则对于转换函数为内部的指针 ptr 将接受 str.c_str() 中首个未转换字符的地址，然后计算该字符的下标并存储之于 *pos ，给出转换处理的字符数。 
-    friend float stof( const c3::string& str, size_t* pos = 0 );
+    /*friend float stof( const c3::string& str, size_t* pos = 0 );
     friend float stof( const c3::wstring& str, size_t* pos = 0 );
     friend double stod( const c3::string& str, size_t* pos = 0 );
     friend double stod( const c3::wstring& str, size_t* pos = 0 );
@@ -448,7 +729,7 @@ public:
     friend c3::wstring to_wstring( unsigned long long value );
     friend c3::wstring to_wstring( float value );
     friend c3::wstring to_wstring( double value );
-    friend c3::wstring to_wstring( long double value );
+    friend c3::wstring to_wstring( long double value );*/
 };
 
 
