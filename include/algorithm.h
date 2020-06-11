@@ -1,3 +1,8 @@
+//
+// Created on 2020 - 06 - 06
+// Written by: WZY, WYL, TSH
+//
+
 #ifndef _C3TL_ALGORITHM_H_
 #define _C3TL_ALGORITHM_H_
 

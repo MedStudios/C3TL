@@ -1,3 +1,8 @@
+//
+// Created on 2020 - 06 - 05
+// Written by: TSH
+//
+
 #ifndef _C3TL_VECTOR_H_
 #define _C3TL_VECTOR_H_
 

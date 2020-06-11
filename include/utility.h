@@ -1,3 +1,8 @@
+//
+// Created on 2020 - 06 - 11
+// Written by: TSH
+//
+
 #ifndef _C3TL_UTILITY_H_
 #define _C3TL_UTILITY_H_
 
