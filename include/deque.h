@@ -366,6 +366,7 @@ deque<T, Allocator>::deque( const deque& other, const Allocator& alloc ):
             this->_alloc.construct(this->_map[i] + j, other._map[i][j]);
         }
     }
+    this->_size = other._size;
     this->_map_size = other._map_size;
     this->_first.first = this->_map[0];
     this->_first.last = this->_map[0] + seg_size;
