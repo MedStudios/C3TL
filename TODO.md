@@ -7,18 +7,20 @@
   >
   >而不是再实现一遍 `erase(end() - 1, 1)`
   >
-  >写 `bool operator==( const T& t) { return this->compare(t); }`
+  >写 `bool operator==( const T& lhs, const T& rhs ) { return lhs.compare(rhs); }`
   > 
-  >而不是再具体实现 `this->compare(t);`
+  >而不是再具体实现 `lhs.compare(rhs)`
+  > `
 
 ### 说明
 - API 列表中，紧挨着的没有注释隔开的两行或多行函数，是功能等价的，可以只实现一遍然后复用
 
 ### 操作
-- 已经实现的且功能正常的 API 函数，请注释起来
-- 有问题的或实现遇到困难的 API 函数，请在上一行打上醒目连续的感叹号
+- 已经实现的且待测试的 API 函数，请在函数前加上 `[testing needed]`
+- 已测试的功能正常的 API 函数，请注释起来
+- 有问题的或实现遇到困难的 API 函数，请在请在函数前加上 `[!!!!!]`
 
-### `c3::allocator` @ `<memory>`
+## `c3::allocator` @ `<memory.h>`
 
 模板定义：
 ```cpp
@@ -44,16 +46,47 @@ void construct( T* p, cosnt T& val );
 void destroy( T* p );
 ```
 
-## `c3::cin` @ `<iostream>`
-重定向到 `std::cin`
+### 使用例：
+```cpp
+class Ctemp {
+public:
+	int a;
+	char ch;
+	
+	Ctemp(const Ctemp& src):a(src.a),ch(src.ch) {} 
+	Ctemp(int _a, char _ch):a(_a),ch(_ch) {}
+};
 
-## `c3::cout` @ `<iostream>`
-重定向到 `std::cout`
+int main(void) {
+	c3::allocator<Ctemp> alloc;
+	// 为 pCtemp 分配 5 个 Ctemp 大小的内存 
+	Ctemp* pCtemp = alloc.allocate(5);
+	// 分别构造对象 
+	for(int i=0; i<5; ++i) {
+		alloc.construct(pCtemp + i, Ctemp(i, '0' + (char)i));
+	} 
+	
+	
+	// 将 pCtemp 作为一个长度为 5 的 Ctemp 类型数组使用 
+	
+	
+	// 销毁 pCtemp
+	for(int i=0; i<5; ++i) {
+	    alloc.destroy(pCtemp + i);
+	} 
+	// 取消 pCtemp 的内存分配 
+	alloc.deallocate(pCtemp, 5);
+	return 0;
+} 
+```
 
-## `c3::reverse_iterator` @ `<iterator>`
+## `<iostream.h>`
+其内容均重定向到 STL 的 `iostream`
+
+## `c3::reverse_iterator` @ `<iterator.h>`
 重定向到 `std::reverse_iterator`
 
-## `c3::basic_string` @ `<string>`
+## `c3::basic_string` @ `<string.h>`
 
 模板定义：
 ```cpp
@@ -144,10 +177,10 @@ Allocator get_allocator() const;
 
 
 // 返回到位于指定位置 pos 的字符的引用。
-ChatT& at( size_t pos );
-ChatT& operator[]( size_t pos );
-const ChatT& at( size_t pos ) const;
-const ChatT& operator[]( size_t pos ) const;
+CharT& at( size_t pos );
+CharT& operator[]( size_t pos );
+const CharT& at( size_t pos ) const;
+const CharT& operator[]( size_t pos ) const;
 
 
 // 返回首字符的引用
@@ -342,11 +375,11 @@ size_t find( CharT ch, size_t pos = 0 ) const;
 // 寻找最后一个等于 str 的子串。搜索始于 pos 向前。
 size_t rfind( const basic_string& str, size_t pos = npos ) const;
 // 寻找最后一个等于范围 [s, s+count) 的子串，此范围能含 '\0'。搜索始于 pos 向前。
-size_t find( const CharT* s, size_t pos, size_t count ) const;
+size_t rfind( const CharT* s, size_t pos, size_t count ) const;
 // 寻找最后一个等于范围 [s, s+count) 的子串，此范围能含 '\0'。搜索始于 pos 向前。
-size_t find( const CharT* s, size_t pos = npos ) const;
+size_t rfind( const CharT* s, size_t pos = npos ) const;
 // 寻找最后一个字符 ch。搜索始于 pos 向前。
-size_t find( CharT ch, size_t pos = npos ) const;
+size_t rfind( CharT ch, size_t pos = npos ) const;
 
 /*
 返回找到的字符的位置，或若找不到这种字符则为 npos 。 
@@ -567,7 +600,7 @@ c3::wstring to_wstring( double value );
 c3::wstring to_wstring( long double value );
 ```
 
-## `c3::vector` @ `<vector>`
+## `c3::vector` @ `<vector.h>`
 
 模板定义：
 ```cpp
@@ -724,9 +757,452 @@ bool operator!=( const c3::vector<T,Alloc>& lhs, const c3::vector<T,Alloc>& rhs 
 
 // 按字典序比较 lhs 与 rhs 的内容。
 template< class T, class Alloc >
+bool operator<( const c3::vector<T,Alloc>& lhs, const c3::vector<T,Alloc>& rhs );
+template< class T, class Alloc >
 bool operator<=( const c3::vector<T,Alloc>& lhs, const c3::vector<T,Alloc>& rhs );
 template< class T, class Alloc >
 bool operator>( const c3::vector<T,Alloc>& lhs, const c3::vector<T,Alloc>& rhs );
 template< class T, class Alloc >
 bool operator>=( const c3::vector<T,Alloc>& lhs, const c3::vector<T,Alloc>& rhs );
+```
+
+
+
+## `c3::deque` @ `<deque.h>`
+
+> 注：`deque` 是双向队列，两端都支持插入和弹出操作，这说明 `deque` 同时支持 FIFO 的队列操作和 LIFO 的栈操作，STL 中将其封装成为单独的 `stack` 类模板和 `queue` 类模板。
+
+模板定义：
+```cpp
+template<
+    class T,
+    class Allocator = c3::allocator<T>
+> class deque;
+```
+
+API：
+```cpp
+// 构造空的 deque
+deque();
+// 构造空的 deque，使用 alloc 作为内存分配器
+explicit deque( const Allocator& alloc );
+// 复制构造函数
+deque( const deque& other );
+// 复制构造函数，使用 alloc 作为内存分配器
+deque( const deque& other, const Allocator& alloc );
+// 构造拥有个 count 默认 T 实例的容器。不进行复制。使用 alloc 作为内存分配器
+explicit deque( size_t count, const Allocator& alloc = Allocator() );
+// 构造拥有 count 个 value 的元素的容器。使用 alloc 作为内存分配器
+deque( size_t count, const T& value, const Allocator& alloc = Allocator());
+// （可选）deque( deque&& other );
+// （可选）deque( deque&& other, const Allocator& alloc );
+
+
+// 销毁 deque 。调用每个元素的析构函数，然后解分配所用的存储。注意，若元素是指针，则不销毁所指向的对象。 
+~deque();
+
+
+// 复制赋值运算符。以 other 的副本替换内容。
+deque& operator=( const deque& other );
+// 移动赋值运算符。
+// （可选）deque& operator=( deque&& other );
+
+
+// 以 count 个 value 替换 deque 的内容。
+void assign( size_t count, const T& value );
+
+
+// 返回与容器关联的分配器。 
+Allocator get_allocator() const;
+
+
+// 返回位于指定位置 pos 的元素的引用，有边界检查。 
+T& at( size_t pos );
+T& operator[]( size_t pos );
+const T& at( size_t pos ) const;
+const T& operator[]( size_t pos ) const;
+
+
+
+// 返回容器首元素的引用。在空容器上对 front 的调用是未定义的。 
+T& front();
+const T& front() const;
+
+
+// 返回容器末元素的引用。在空容器上对 back 的调用是未定义的。 
+T& back();
+const T& back() const;
+
+
+// 返回可变或常迭代器，取决于 *this 的常性。
+iterator begin();
+const_iterator begin() const;
+
+
+// 返回指向容器末元素的后一个元素的迭代器。试图访问它导致未定义行为。 
+iterator end();
+const_iterator end() const;
+
+
+// 返回指向逆转容器首元素的逆向迭代器。它对应非逆向的末元素。 
+reverse_iterator rbegin();
+const_reverse_iterator rbegin() const;
+
+
+// 返回指向逆转容器首字符后一个元素的逆向迭代器。它对应非逆向首元素的前一个元素。 
+reverse_iterator rend();
+const_reverse_iterator rend() const;
+
+
+// 若容器为空则返回 true ，否则返回 false 。
+bool empty() const;
+
+
+// 返回容器的长度。
+size_t size() const;
+
+
+// 返回由于操作系统或库实现限制所能保有的最大容器长度
+size_t max_size() const;
+
+
+// 请求移除未使用的保留空间。（非强制） 
+void shrink_to_fit();
+
+
+// 清空容器。
+void clear();
+
+
+// 在 pos 前插入 value 。
+iterator insert( const_iterator pos, const T& value );
+// （可选）iterator insert( const_iterator pos, T&& value );
+// 在 pos 前插入 count 个 value 。
+iterator insert( const_iterator pos, size_t count, const T& value );
+
+
+// 移除位于 pos 的元素。
+iterator erase( const_iterator pos );
+// 移除范围 [first; last) 中的元素。
+iterator erase( const_iterator first, const_iterator last );
+
+
+// 后附给定元素 value 到容器尾。 
+void push_back( const T& value );
+// （可选）void push_back( T&& value );
+
+
+// 移除容器的最末元素。在空容器上调用 pop_back 是未定义的。 
+void pop_back();
+
+
+// 前附给定元素 value 到容器尾。 
+void push_front( const T& value );
+// （可选）void push_front( T&& value );
+
+
+// 移除容器的首元素。在空容器上调用 pop_back 是未定义的。 
+void pop_front();
+
+
+
+// 若当前大小大于 count ，则减小容器为其首 count 个元素。若当前大小小于 count， 则后附额外的默认插入的元素。
+void resize( size_t count );// 若当前大小大于 count ，则减小容器为其首 count 个元素。若当前大小小于 count， 则后附额外的 value 的副本。
+void resize( size_t count, const T& value );
+
+
+
+// 将内容与 other 的交换。不在单个元素上调用任何移动、复制或交换操作。 
+void swap( deque& other );
+```
+
+友元函数：
+```cpp
+// 检查 lhs 与 rhs 的内容是否相等，即它们是否拥有相同数量的元素且 lhs 中每个元素与 rhs 的同位置元素比较相等。
+template< class T, class Alloc >
+bool operator==( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator!=( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
+
+// 按字典序比较 lhs 与 rhs 的内容。
+template< class T, class Alloc >
+bool operator<( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator<=( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator>( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator>=( const c3::deque<T,Alloc>& lhs, const c3::deque<T,Alloc>& rhs );
+```
+
+
+
+## `c3::stack` @ `<stack.h>`
+
+模板定义：
+```cpp
+template<
+    class T,
+    class Container = std::deque<T>
+> class stack;
+```
+> 注：`stack` 类模板是 `Container` 类的封装，其中 `Container` 通常且默认是 `deque` ——即， `stack` 是 `deque` 作为一个**栈**单独实现的一个类模板。 `stack` 的 API 可以完全基于 `deque`，不过 `deque` 作为栈不允许的操作不会在 `stack` 中得到定义。 
+
+成员对象：
+```cpp
+protected:
+    Container c;    // 底层容器，默认为一个 deque
+```
+
+API:
+
+```cpp
+// 默认构造函数。值初始化容器。
+stack() : stack(Container()) { }
+//  以 cont 的内容复制构造底层容器 c 。
+explicit stack( const Container& cont );
+// （可选）explicit stack( Container&& cont );
+// 复制构造函数
+stack( const stack& other );
+// 移动构造函数
+// （可选）stack( stack&& other );
+
+
+// 销毁 stack 。调用每个元素的析构函数，然后解分配所用的存储。注意，若元素是指针，则不销毁所指向的对象。 
+~stack();
+	
+
+// 复制赋值运算符。返回 *this
+stack& operator=( const stack& other );
+// 移动赋值运算符。返回 *this
+// （可选）stack& operator=( stack&& other );
+
+// 返回 stack 中顶元素的引用。它是最近推入的元素。此元素将在调用 pop() 时被移除。等效于调用 c.back() 。 
+T& top();
+const T& top() const;
+		
+
+// 即调用 c.empty() 。
+bool empty() const;
+
+
+// 即调用 c.size() 。
+size_t size() const;
+
+
+// 即调用 c.push_back(value) ：后附给定元素 value 到栈尾。 
+void push( const T& value );
+// （可选）void push_back( T&& value );
+
+
+// 即调用 c.pop_back(value) 移除容器的最末元素。
+void pop();
+
+
+// 将内容与 other 的交换。
+void swap( stack& other );
+```
+
+
+友元函数：
+```cpp
+// 检查 lhs 与 rhs 的内容是否相等，即它们是否拥有相同数量的元素且 lhs 中每个元素与 rhs 的同位置元素比较相等。
+template< class T, class Alloc >
+bool operator==( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator!=( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
+
+// 按字典序比较 lhs 与 rhs 的内容。
+template< class T, class Alloc >
+bool operator<( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator<=( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator>( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
+template< class T, class Alloc >
+bool operator>=( const c3::stack<T,Alloc>& lhs, const c3::stack<T,Alloc>& rhs );
+```
+
+
+
+## `<algorithm.h>`
+
+API:
+```cpp
+// 以不降序排序范围 [first, last) 中的元素。
+// 用 operator< 比较元素。
+template< class RandomIt >
+void sort( RandomIt first, RandomIt last );
+// 用给定的二元比较函数 comp 比较元素。
+template< class RandomIt, class Compare >
+void sort( RandomIt first, RandomIt last, Compare comp );
+
+// 重排元素，使得范围 [first, middle) 含有范围 [first, last) 中已排序的 middle - first 个最小元素。 
+// 用 operator< 比较元素。
+template< class RandomIt >
+void partial_sort( RandomIt first, RandomIt middle, RandomIt last );
+// 用给定的二元比较函数 comp 比较元素。
+template< class RandomIt, class Compare >
+void partial_sort( RandomIt first, RandomIt middle, RandomIt last, Compare comp );
+
+
+// 以升序排序范围 [first, last) 中的某些元素，存储结果于范围 [d_first, d_last) 。 
+template< class InputIt, class RandomIt >
+RandomIt partial_sort_copy( InputIt first, InputIt last, RandomIt d_first, RandomIt d_last );
+template< class InputIt, class RandomIt, class Compare >
+RandomIt partial_sort_copy( InputIt first, InputIt last, RandomIt d_first, RandomIt d_last, Compare comp );
+
+
+// 检查 [first, last) 中的元素是否以不降序排序。 
+// 用 operator< 比较元素。
+template< class ForwardIt >
+bool is_sorted( ForwardIt first, ForwardIt last );
+// 用给定的二元比较函数 comp 比较元素。
+template< class ForwardIt, class Compare >
+bool is_sorted( ForwardIt first, ForwardIt last, Compare comp );
+
+
+// 检验范围 [first, last) ，返回始于 first 且其中元素已以升序排序的最大范围的最后迭代器。 
+// 用 operator< 比较元素。
+template< class ForwardIt >
+ForwardIt is_sorted_until( ForwardIt first, ForwardIt last );
+// 用给定的二元比较函数 comp 比较元素。
+template< class ForwardIt, class Compare >
+ForwardIt is_sorted_until( ForwardIt first, ForwardIt last, Compare comp );
+
+
+// 二分搜索，返回指向范围 [first, last) 中首个不小于（即大于或等于） value 的元素的迭代器，若找不到这种元素则返回 last
+// 用 operator< 比较元素
+template< class ForwardIt, class T >
+ForwardIt lower_bound( ForwardIt first, ForwardIt last, const T& value );
+// 用给定的比较函数 comp 。
+template< class ForwardIt, class T, class Compare >
+ForwardIt lower_bound( ForwardIt first, ForwardIt last, const T& value, Compare comp );
+
+
+// 二分搜索，返回指向范围 [first, last) 中首个大于 value 的元素的迭代器，若找不到这种元素则返回 last
+// 用 operator< 比较元素
+template< class ForwardIt, class T >
+ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value );
+// 用给定的比较函数 comp 。
+template< class ForwardIt, class T, class Compare >
+ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value, Compare comp );
+
+
+// 二分搜索，若等价于 value 的元素出现于范围 [first, last) 中则返回 true，否则返回 false。 
+// 用 operator< 比较元素
+template< class ForwardIt, class T >
+bool binary_search( ForwardIt first, ForwardIt last, const T& value );
+// 用给定的比较函数 comp
+template< class ForwardIt, class T, class Compare >
+bool binary_search( ForwardIt first, ForwardIt last, const T& value, Compare comp );
+
+
+// 归并二个已排序范围 [first1, last1) 和 [first2, last2) 到始于 d_first 的一个已排序范围中。
+// 用 operator< 比较元素
+template< class InputIt1, class InputIt2, class OutputIt >
+OutputIt merge( InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first );
+// 用给定的比较函数 comp
+template< class InputIt1, class InputIt2, class OutputIt, class Compare>
+OutputIt merge( InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Compare comp );
+
+
+// 归并二个相继的已排序范围 [first, middle) 及 [middle, last) 为一个已排序范围 [first, last) 。 
+// 用 operator< 比较元素
+template< class BidirIt >
+void inplace_merge( BidirIt first, BidirIt middle, BidirIt last );
+// 用给定的比较函数 comp
+template< class BidirIt, class Compare>
+void inplace_merge( BidirIt first, BidirIt middle, BidirIt last, Compare comp );
+
+
+// 返回给定值中的较大者。 
+// 用 operator< 比较元素
+template< class T >
+const T& max( const T& a, const T& b );
+// 用给定的比较函数 comp
+template< class T, class Compare >
+const T& max( const T& a, const T& b, Compare comp );
+
+
+// 返回给定值中的较小者。 
+// 用 operator< 比较元素
+template< class T >
+const T& min( const T& a, const T& b );
+// 用给定的比较函数 comp
+template< class T, class Compare >
+const T& min( const T& a, const T& b, Compare comp );
+
+
+// 寻找范围 [first, last) 中的最大元素。 
+// 用 operator< 比较元素
+template< class ForwardIt >
+ForwardIt max_element(ForwardIt first, ForwardIt last );
+// 用给定的比较函数 comp
+template< class ForwardIt, class Compare >
+ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp );
+
+
+// 寻找范围 [first, last) 中的最小元素。 
+// 用 operator< 比较元素
+template< class ForwardIt >
+ForwardIt min_element(ForwardIt first, ForwardIt last );
+// 用给定的比较函数 comp
+template< class ForwardIt, class Compare >
+ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp );
+
+
+// 检查第一个范围 [first1, last1) 是否按字典序小于第二个范围 [first2, last2) 。 
+template< class InputIt1, class InputIt2 >
+bool lexicographical_compare( InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2 );
+template< class InputIt1, class InputIt2, class Compare >
+bool lexicographical_compare( InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Compare comp );
+
+
+// 变换范围 [first, last) 为来自所有按相对于 operator< 或 comp 的字典序的下个排列。若这种排列存在则返回 true ，否则变换范围为首个排列，并返回 false 。 
+template< class BidirIt >
+bool next_permutation( BidirIt first, BidirIt last );
+template< class BidirIt, class Compare >
+bool next_permutation( BidirIt first, BidirIt last, Compare comp );
+
+
+// 变换范围 [first, last) 为来自所有按相对于 operator< 或 comp 的字典序的上个排列。若这种排列存在则返回 true ，否则变换范围为末排列，并返回 false 。 
+template< class BidirIt >
+bool prev_permutation( BidirIt first, BidirIt last );
+template< class BidirIt, class Compare >
+bool prev_permutation( BidirIt first, BidirIt last, Compare comp );
+```
+
+### 使用例：
+
+#### `sort` 和 `binary_search`：
+```cpp
+#include <algorithm>
+
+bool comp (int a, int b)
+{
+    return a > b; //降序排列，如果改为 return a < b，则为升序
+}
+
+int main()
+{
+    int a[10];
+    for(int i = 0; i < 10; ++i)
+        cin >> a[i];
+
+    c3::sort(a, a + 10);  // 升序
+    cout << "Integer 5 found? " << c3::binary_search(a, a + 10, 5) << endl;
+
+    for(int i = 0; i < 10; ++i)
+        cout << a[i] << ' ';
+    cout << endl;
+
+    c3::sort(a, a + 10, comp); // 降序
+    cout << "Integer 5 found? " << c3::binary_search(a, a + 10, 5, comp); // 使用和 sort 一致的比较函数
+
+    for(int i = 0; i < 10; ++i)
+        cout << a[i] << ' ';
+    cout << endl;
+    return 0;
+}
 ```
