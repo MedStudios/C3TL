@@ -213,7 +213,9 @@ vector<T, Allocator>::vector( const vector<T, Allocator>& other, const Allocator
     _capacity(other.capacity())
 {
     this->_data = this->_alloc.allocate(this->_capacity);
-    memcpy(this->_data, other.data(), sizeof(T) * this->_size);
+    for(unsigned int i = 0; i < this->_size; ++i) {
+        this->_alloc.construct(this->_data + i, other.data()[i]);
+    }
     this->_first = this->_data;
     this->_last = this->_data + this->_size;
     this->_end = this->_data + this->_capacity;
@@ -257,26 +259,32 @@ vector<T, Allocator>::vector( vector<T, Allocator>&& other ) {
 template< class T, class Allocator >
 vector<T, Allocator>::vector( vector<T, Allocator>&& other, const Allocator& alloc ):
     _alloc(alloc),
-    _size(other.size()),
-    _capacity(other.capacity())
+    _data(other._data),
+    _size(other._size),
+    _capacity(other._capacity)
 {
-    this->data = this->alloc.allocate(this->_capacity);
-    memcpy(this->data, other.data(), sizeof(T) * this->_size);
+    other._data = other._alloc.allocate(0);
+    other._capacity = other._size = 0;
+    other._first = other._last = other._end = other._data;
     this->_first = this->_data;
     this->_last = this->_data + this->_size;
     this->_end = this->_data + this->_capacity;
-
-    other.clear();
 }
 
 template< class T, class Allocator >
 vector<T, Allocator>::vector( std::initializer_list<T> init, const Allocator& alloc ):
     _alloc(alloc),
-    _size(init.size()),
-    _capacity(init.size())
 {
-    this->data = this->alloc.allocate(this->_capacity);
-    memcpy(this->data, init.begin(), sizeof(T) * init.size());
+    for(size_t i = 0; i < this->_size; ++i) {
+        this->_alloc.destroy(this->_data + i);
+    }
+    this->_data = this->_alloc.deallocate(this->_capacity);
+    this->_data = this->_alloc.allocate(init.size());
+    this->_capacity = init.size();
+    for(size_t i = 0; i < init.size(); ++i) {
+        this->_alloc.construct(this->_data + i, *(init.begin() + i));
+    }
+    this->_size = init.size();
     this->_first = this->_data;
     this->_last = this->_data + this->_size;
     this->_end = this->_data + this->_capacity;
@@ -301,7 +309,9 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( const vector<T, Allocator
     this->_alloc = other.get_allocator();
     this->_capacity = other.capacity();
     this->_data = this->alloc.allocate(this->_capacity);
-    memcpy(this->_data, other.data(), sizeof(T) * other.size());
+    for(size_t i = 0; i < other.size(); ++i) {
+        this->_alloc.construct(this->_data + i, other.data()[i]);
+    }
     this->_size = other.size();
     this->_first = this->_data;
     this->_last = this->_data + this->_size;
@@ -316,15 +326,16 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( vector<T, Allocator>&& ot
     }
     this->_alloc.deallocate(this->_data, this->_capacity);
     this->_alloc = c3::move(other.get_allocator());
+    this->_data = other._data;
+    other._data = other._alloc.allocate(0);
+    other._capacity = other._size = 0;
     this->_capacity = other.capacity();
-    this->_data = this->alloc.allocate(this->_capacity);
-    memcpy(this->_data, other.data(), sizeof(T) * other.size());
     this->_size = other.size();
+    other._first = other._last = other._end = other._data;
     this->_first = this->_data;
     this->_last = this->_data + this->_size;
     this->_end = this->_data + this->_capacity;
     
-    other.clear();
     return *this;
 }
 
@@ -336,7 +347,9 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( std::initializer_list<T> 
     this->_alloc.deallocate(this->_data, this->_capacity);
     this->_capacity = ilist.size();
     this->_data = this->alloc.allocate(this->_capacity);
-    memcpy(this->_data, ilist.begin(), sizeof(T) * ilist.size());
+    for(size_t i = 0; i < other.size(); ++i) {
+        this->_alloc.construct(this->_data + i, other.data()[i]);
+    }
     this->_size = ilist.size();
     this->_first = this->_data;
     this->_last = this->_data + this->_size;
