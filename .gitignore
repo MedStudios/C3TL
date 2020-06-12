@@ -32,10 +32,13 @@
 *.app
 
 # VS Code Files
-*/.vscode/
+*.vscode/
 
 # CMake Files
 /cmake-build-debug/
 
 # CLion Files
 /.idea/
+
+# Build Files
+/build/

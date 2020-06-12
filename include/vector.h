@@ -273,12 +273,8 @@ vector<T, Allocator>::vector( vector<T, Allocator>&& other, const Allocator& all
 
 template< class T, class Allocator >
 vector<T, Allocator>::vector( std::initializer_list<T> init, const Allocator& alloc ):
-    _alloc(alloc),
+    _alloc(alloc)
 {
-    for(size_t i = 0; i < this->_size; ++i) {
-        this->_alloc.destroy(this->_data + i);
-    }
-    this->_data = this->_alloc.deallocate(this->_capacity);
     this->_data = this->_alloc.allocate(init.size());
     this->_capacity = init.size();
     for(size_t i = 0; i < init.size(); ++i) {
@@ -347,8 +343,8 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( std::initializer_list<T> 
     this->_alloc.deallocate(this->_data, this->_capacity);
     this->_capacity = ilist.size();
     this->_data = this->alloc.allocate(this->_capacity);
-    for(size_t i = 0; i < other.size(); ++i) {
-        this->_alloc.construct(this->_data + i, other.data()[i]);
+    for(size_t i = 0; i < ilist.size(); ++i) {
+        this->_alloc.construct(this->_data + i, ilist.data()[i]);
     }
     this->_size = ilist.size();
     this->_first = this->_data;
