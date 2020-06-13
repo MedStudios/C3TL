@@ -74,9 +74,7 @@ stack<T,Container>::stack( const stack& other ) :
 {}
 
 template< class T, class Container >
-stack<T,Container>::~stack() {
-    this->_c.~Container();
-}
+stack<T,Container>::~stack() { }
 
 template< class T, class Container >
 typename stack<T,Container>::reference stack<T,Container>::top() {
