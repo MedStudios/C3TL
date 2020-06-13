@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.6)
 
 project(C3TL)
 
 # version
 set(C3TL_VERSION_MAJOR 0)
-set(C3TL_VERSION_MINOR 9)
+set(C3TL_VERSION_MINOR 1)
 set(C3TL_VERSION_PATCH 0)
 set(C3TL_VERSION "${C3TL_VERSION_MAJOR}.${C3TL_VERSION_MINOR}.${C3TL_VERSION_PATCH}")
 message(STATUS "The version of this project is: ${C3TL_VERSION_VERSION}")
