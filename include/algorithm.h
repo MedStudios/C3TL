@@ -95,30 +95,23 @@ void sort(RandomIt first, RandomIt last)
 {
     if (first >= last)
         return;
-    else
-    {
-        RandomIt ps = first;  //ps指向第一个元素
-        RandomIt pe = last - 1;  //pe指向倒数第二个元素
-        while (ps < pe)
-        {
-            while (*ps < *first && ps < pe)  //右移
-            {
-                ++ps;
-            }
-            while (*ps >= *first && ps < pe)  //左移
-            {
-                --pe;
-            }
 
-            if (ps < pe) {
-                swap(*ps, *pe);
-            }
+    auto base = *first;
+    RandomIt l = first;
+    RandomIt r = last - 1;
+
+    while (l < r) {
+        while (*l < base && l < r) {
+            ++l;
         }
-        if (*pe < *first)
-            swap(*first, *pe);
-        sort(first, pe);
-        sort(pe, last);
+        while (base < *r  && l < r) {
+            --r;
+        }
+        swap(*l, *r);
     }
+    *l = base;
+    sort(first, l);
+    sort(r + 1, last);
 }
 
 template< class RandomIt, class Compare >
@@ -126,42 +119,37 @@ void sort( RandomIt first, RandomIt last, Compare comp )
 {
     if (first >= last)
         return;
-    else
-    {
-        RandomIt ps = first;  //ps指向第一个元素
-        RandomIt pe = last - 1;  //pe指向倒数第二个元素
-        while (ps < pe)
-        {
-            while (comp(*ps, *first) && ps < pe)  //右移
-            {
-                ++ps;
-            }
-            while (!comp(*ps, *first) && ps < pe)  //左移
-            {
-                --pe;
-            }
 
-            if (ps < pe) {
-                swap(*ps, *pe);
-            }
+    auto base = *first;
+    RandomIt l = first;
+    RandomIt r = last - 1;
+
+    while (l < r) {
+        while (comp(*l, base) && l < r) {
+            ++l;
         }
-        if (comp(*pe, *first))
-            swap(*first, *pe);
-        sort(first, pe);
-        sort(pe, last);
+        while (comp(base, *r)  && l < r) {
+            --r;
+        }
+        swap(*l, *r);
     }
+    *l = base;
+    sort(first, l);
+    sort(r + 1, last);
 }
 
 template< class RandomIt >
 void partial_sort(RandomIt first, RandomIt middle, RandomIt last)  
 {
     sort(first, last);
+    // TODO: a real partial sort.
 }
 
 template< class RandomIt, class Compare >
 void partial_sort( RandomIt first, RandomIt middle, RandomIt last, Compare comp )
 {
     sort(first, last, comp);
+    // TODO: a real partial sort.
 }
 
 template< class InputIt, class RandomIt >
@@ -232,7 +220,7 @@ RandomIt is_sorted_until(RandomIt first, RandomIt last, Compare comp)
 template< class ForwardIt, class T >
 ForwardIt lower_bound( ForwardIt first, ForwardIt last, const T& value ) {
     if (last <= first)
-        return false;
+        return first;
 
     unsigned int lo = 0;
     unsigned int hi = last - first - 1;
@@ -252,7 +240,7 @@ ForwardIt lower_bound( ForwardIt first, ForwardIt last, const T& value ) {
 template< class ForwardIt, class T, class Compare >
 ForwardIt lower_bound( ForwardIt first, ForwardIt last, const T& value, Compare comp ) {
     if (last <= first)
-        return false;
+        return first;
 
     unsigned int lo = 0;
     unsigned int hi = last - first - 1;
@@ -272,7 +260,7 @@ ForwardIt lower_bound( ForwardIt first, ForwardIt last, const T& value, Compare 
 template< class ForwardIt, class T >
 ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value ) {
     if (last <= first)
-        return false;
+        return first;
 
     unsigned int lo = 0;
     unsigned int hi = last - first - 1;
@@ -280,7 +268,7 @@ ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value ) {
     while (lo < hi)
     {
 		unsigned int mid = (lo + hi) / 2;
-        if (first[mid] < value)
+        if (first[mid] <= value)
             lo = mid + 1;
         else
 			hi = mid;
@@ -291,7 +279,7 @@ ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value ) {
 template< class ForwardIt, class T, class Compare >
 ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value, Compare comp ) {
     if (last <= first)
-        return false;
+        return first;
 
     unsigned int lo = 0;
     unsigned int hi = last - first - 1;
@@ -311,7 +299,7 @@ ForwardIt upper_bound( ForwardIt first, ForwardIt last, const T& value, Compare 
 template< class ForwardIt, class T >
 bool binary_search( ForwardIt first, ForwardIt last, const T& value ) {
     if (last <= first)
-        return false;
+        return first;
 
     unsigned int lo = 0;
     unsigned int hi = (unsigned int)(last - first - 1);
@@ -332,7 +320,7 @@ bool binary_search( ForwardIt first, ForwardIt last, const T& value ) {
 template< class ForwardIt, class T, class Compare >
 bool binary_search( ForwardIt first, ForwardIt last, const T& value, Compare comp ) {
     if (last <= first)
-        return false;
+        return first;
 
     unsigned int lo = 0;
     unsigned int hi = last - first - 1;
@@ -409,11 +397,13 @@ OutputIt merge( InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2
 template< class BidirIt >
 void inplace_merge( BidirIt first, BidirIt middle, BidirIt last ) {
     sort( first, last );
+    // TODO: a real inplace merge function
 }
 
 template< class BidirIt, class Compare>
 void inplace_merge( BidirIt first, BidirIt middle, BidirIt last, Compare comp ) {
     sort( first, last, comp );
+    // TODO: a real inplace merge function
 }
 
 

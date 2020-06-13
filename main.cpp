@@ -1,7 +1,9 @@
+// #include "basic_string.h"
 #include "vector.h"
 #include "deque.h"
 #include "stack.h"
 #include "queue.h"
+#include "algorithm.h"
 #include "iostream.h"
 
 using namespace c3;
@@ -37,6 +39,29 @@ int main(void) {
     q.push(3);
     q.pop();
     q.pop();
-    
+
+
+    // string str = "Test string";
+    // str.append(" is good");
+
+
+    int arr[]={3, 9, 5, 1, 7};
+    sort(arr, arr+5);
+    for(int i : arr) {
+        cout << i << " ";
+    }
+    cout << endl << binary_search(arr, arr+6, 46) << endl;
+    int arr2[]={0, 8, 4, 6, 2};
+    int arr3[10];
+    sort(arr2, arr2+5);
+    for(int i : arr2) {
+        cout << i << " ";
+    }
+    cout << endl;
+    merge(arr, arr+5, arr2, arr2+5, arr3);
+    for(int i : arr3) {
+        cout << i << " ";
+    }
+
     return 0;
 }
