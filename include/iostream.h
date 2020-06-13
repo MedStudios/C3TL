@@ -34,6 +34,17 @@ wostream wcout(std::wcout.rdbuf());
 wostream wcerr(std::wcerr.rdbuf());
 wostream wclog(std::wclog.rdbuf());
 
+template< class CharT >
+c3::basic_ostream<CharT>& endl( c3::basic_ostream<CharT>& os ) {
+    return std::endl(os);
+}
+	
+template< class CharT >
+c3::basic_ostream<CharT>& flush( c3::basic_ostream<CharT>& os ) {
+    return std::flush(os);
+}
+	
+
 } // namespace c3
 
 #endif // _C3TL_IOSTREAM_H_
