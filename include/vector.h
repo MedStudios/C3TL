@@ -180,6 +180,18 @@ protected:
     iterator _first;
     iterator _last;
     iterator _end;
+
+    // 将此 vector 内置的迭代器指向指定位置。
+    inline void _set_iters(pointer data, size_type size, size_type cap) {
+        this->_first = data;
+        this->_last = data + size;
+        this->_end = data + cap;
+    }
+
+    // 将此 vector 内置的迭代器重置到相应位置，原则上每个导致 vector 元素变动的函数末尾都要调用这个函数。
+    inline void _reset_iters() {
+        _set_iters(this->_data, this->_size, this->_capacity);
+    }
 };
 
 
@@ -197,8 +209,7 @@ vector<T, Allocator>::vector( const Allocator& alloc ):
     _capacity(16)    // 默认的容量是 2^4
 {
     this->_data = this->_alloc.allocate(this->_capacity);
-    this->_first = this->_last = this->_data;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -216,9 +227,7 @@ vector<T, Allocator>::vector( const vector<T, Allocator>& other, const Allocator
     for(unsigned int i = 0; i < this->_size; ++i) {
         this->_alloc.construct(this->_data + i, other.data()[i]);
     }
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -231,9 +240,7 @@ vector<T, Allocator>::vector( size_type count, const Allocator& alloc ):
     for(unsigned int i = 0; i < this->_size; ++i) {
         this->_alloc.construct(this->_data + i, T());
     }
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -246,9 +253,7 @@ vector<T, Allocator>::vector( size_type count, const_reference value, const Allo
     for(unsigned int i = 0; i < this->_size; ++i) {
         this->_alloc.construct(this->_data + i, value);
     }
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -266,9 +271,7 @@ vector<T, Allocator>::vector( vector<T, Allocator>&& other, const Allocator& all
     other._data = other._alloc.allocate(0);
     other._capacity = other._size = 0;
     other._first = other._last = other._end = other._data;
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -281,9 +284,7 @@ vector<T, Allocator>::vector( std::initializer_list<T> init, const Allocator& al
         this->_alloc.construct(this->_data + i, *(init.begin() + i));
     }
     this->_size = init.size();
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -309,9 +310,7 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( const vector<T, Allocator
         this->_alloc.construct(this->_data + i, other.data()[i]);
     }
     this->_size = other.size();
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
     return *this;
 }
 
@@ -328,9 +327,7 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( vector<T, Allocator>&& ot
     this->_capacity = other.capacity();
     this->_size = other.size();
     other._first = other._last = other._end = other._data;
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
     
     return *this;
 }
@@ -347,9 +344,7 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( std::initializer_list<T> 
         this->_alloc.construct(this->_data + i, ilist.data()[i]);
     }
     this->_size = ilist.size();
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();;
     return *this;
 }
 
@@ -360,16 +355,17 @@ void vector<T, Allocator>::assign( size_type count, const_reference value ) {
         this->_alloc.destroy(this->_data + i);
     }
     this->_size = 0;
-    size_type new_cap = this->capacity;
+    size_type new_cap = this->_capacity;
     while(new_cap < count) {
         new_cap *= 2;
     }
     this->reserve(new_cap);
 
-    for(unsigned int i = 0; i < this->_size; ++i) {
+    for(unsigned int i = 0; i < count; ++i) {
         this->_alloc.construct(this->_data + i, value);
     }
-    this->_size = count();
+    this->_size = count;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -502,24 +498,20 @@ void vector<T, Allocator>::reserve(size_type new_cap) {
     this->_alloc.deallocate(this->_data, this->_capacity);
     this->_data = tmp;
     this->_capacity = new_cap;
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
 void vector<T, Allocator>::shrink_to_fit() {
     pointer tmp = this->_alloc.allocate(this->_size);
-    memcmp(tmp, this->_data, sizeof(T) * this->_size);
+    memcpy(tmp, this->_data, sizeof(T) * this->_size);
     for(unsigned int i = 0; i < this->_size; ++i) {
         this->_alloc.destroy(this->_data + i);
     }
     this->_alloc.deallocate(this->_data, this->_capacity);
     this->_data = tmp;
     this->_capacity = this->_size;
-    this->_first = this->_data;
-    this->_last = this->_data + this->_size;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -528,8 +520,7 @@ void vector<T, Allocator>::clear() {
         this->_alloc.destroy(this->_data + i);
     }
     this->_size = 0;
-    this->_first = this->_last = this->_data;
-    this->_end = this->_data + this->_capacity;
+    _reset_iters();
 }
 
 template< class T, class Allocator >
@@ -556,6 +547,7 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert( const_iter
         this->_alloc.construct(insert_head + i, value);
     }
     this->_size += count;
+    _reset_iters();
     return insert_head;
 }
 
@@ -593,6 +585,7 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::erase( const_itera
         *(it) = *(it + count);
     }
     this->_size -= count;
+    _reset_iters();
     return erase_first;
 }
 
@@ -642,7 +635,7 @@ void vector<T, Allocator>::resize( size_type count, const_reference value ) {
         }
         this->_size = count;
     } else if (count > this->_size) {
-        size_type new_cap = this->capacity;
+        size_type new_cap = this->_capacity;
         while(new_cap < count) {
             new_cap *= 2;
         }
@@ -651,6 +644,7 @@ void vector<T, Allocator>::resize( size_type count, const_reference value ) {
             this->_alloc.construct(this->_data + i, value);
         }
     }
+    _reset_iters();
 }
 
 template< class T, class Allocator >

@@ -9,16 +9,43 @@
 using namespace c3;
 
 int main(void) {
-    vector<int> v{-3,-2,-1};
-    for(int i=0; i< 20; ++i)
+    // vector tests
+    cout << "VECTOR TESTS with v as a vector<int> object:" << endl;
+    vector<int> v;
+    for(int i=0; i< 33; ++i) {
+        cout << "pushing back: " << i << endl;
         v.push_back(i);
+        cout << "v.front(): " << v.front() << ", v.back(): " << v.back();
+        cout << ", v.size(): " << v.size() << ", v.capacity(): " << v.capacity() << endl;
+    }
+    cout << "clear v." << endl;
     v.clear();
+    cout << "pushing back 1, 2, 3.";
     v.push_back(1);
     v.push_back(2);
     v.push_back(3);
+    cout << "v.back(): " << v.back() << ", v.size(): " << v.size() << endl;;
     v.pop_back();
+    cout << "popped back, v.back(): " << v.back() << ", v.size(): " << v.size() << endl;
     v.pop_back();
+    cout << "popped back, v.back(): " << v.back() << ", v.size(): " << v.size() << endl;
     v.pop_back();
+    cout << "popped back, v.back(): " << v.back() << ", v.size(): " << v.size();
+    cout << ", in this line v.back() should have an invalid value." << endl;
+
+    cout << "assigning v 12 copies of integer 10000." << endl;
+    v.assign(12, 10000);
+    cout << "v.size(): " << v.size() << ", v.capacity(): " << v.capacity() << endl;
+    cout << "v[10]: " << v[10] << ", v.at(11): " << v.at(11) << endl;
+    cout << "shrinking v to fit." << endl;
+    v.shrink_to_fit();
+    cout << "v.size(): " << v.size() << ", v.capacity(): " << v.capacity() << endl;
+    cout << "v[10]: " << v[10] << ", v.at(11): " << v.at(11) << endl;
+    cout << "resizing v to 64."<< endl;
+    v.resize(64);
+    cout << "v.size(): " << v.size() << ", v.capacity(): " << v.capacity() << endl;
+    cout << "v[10]: " << v[10] << ", v.at(58): " << v.at(58) << endl;
+    cout << "END OF VECTOR TESTS." << endl << endl;
 
     deque<int> dq;
     dq.push_back(1);
