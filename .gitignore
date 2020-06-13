@@ -35,7 +35,7 @@
 *.vscode/
 
 # CMake Files
-/cmake-build-debug/
+/cmake-build-*/
 
 # CLion Files
 /.idea/
