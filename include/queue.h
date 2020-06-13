@@ -78,9 +78,7 @@ queue<T,Container>::queue( const queue& other ) :
 {}
 
 template< class T, class Container >
-queue<T,Container>::~queue() {
-    this->_c.~Container();
-}
+queue<T,Container>::~queue() { }
 
 template< class T, class Container >
 typename queue<T,Container>::reference queue<T,Container>::front() {
