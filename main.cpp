@@ -1,4 +1,5 @@
-// #include "basic_string.h"
+#include <cstring>
+#include "basic_string.h"
 #include "vector.h"
 #include "deque.h"
 #include "stack.h"
@@ -126,9 +127,20 @@ int main(void) {
     cout << "END OF VECTOR TESTS." << endl << endl;
 
 
-    // string str = "Test string";
-    // str.append(" is good");
-
+    // STRING tests
+    cout << "STRING TESTS with str as a basic_string<char> (aka. string) object:" << endl;
+    cout << "str = \"Test string\";" << endl;
+    string str = "Test string";
+    cout << "str:" << str << endl;
+    cout << "str.append(\" is good\");" << endl;
+    str.append(" is good");
+    cout << "str: " << str << endl;
+    cout << "str2 = str + \", why?\";" << endl;
+    string str2 = str + ", why?";
+    cout << "str2: " << str2 << endl;
+    cout << "str2 += str + \" \";" << endl;
+    str2 += str + " ";
+    cout << "str2: " << str2 << endl << endl;
 
     // ALGORITHM tests
     cout << "ALGORITHM TESTS" << endl;
