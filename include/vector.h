@@ -533,7 +533,7 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert( const_iter
     if (pos < this->_first || pos > this->_last)
         return const_cast<iterator>(pos);
 
-    size_type new_cap = this->capacity;
+    size_type new_cap = this->_capacity;
     while(new_cap < this->_size + count) {
         new_cap *= 2;
     }

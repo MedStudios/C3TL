@@ -78,7 +78,7 @@ public:
             --(*this);
             return ip;
         }
-        iterator operator+ (const int & n) {
+        iterator operator+ (const int & n) const {
             if (n==0)
                 return *this;
 
@@ -88,26 +88,31 @@ public:
             // 在内存段里要偏移多少个位置
             int it_offset;
 
+            const int ss = static_cast<const int>(deque<T, Allocator>::seg_size);
             if ( n > 0 ) {
-                int t = (n + (ip.cur - ip.first));
-                node_offset = t / deque<T, Allocator>::seg_size;
-                it_offset = t % deque<T, Allocator>::seg_size;
+                int t = n + (ip.cur - ip.first);
+                node_offset = t / ss;
+                it_offset = t % ss;
             } else {
-                int t = (n - (ip.last - ip.cur));
-                node_offset =  t / deque<T, Allocator>::seg_size;
-                it_offset = deque<T, Allocator>::seg_size + ( t % deque<T, Allocator>::seg_size );
+                int t = n - (ip.last - ip.cur);
+                node_offset = (t + 1) / ss;
+                it_offset = (ss + t % ss) % ss;
+                if (it_offset == -1) it_offset = ss - 1;
             }
             ip.node += node_offset;
-            ip.first = ip.node;
-            ip.last = ip.node + seg_size;
-            ip.cur = ip.node + it_offset;
+            ip.first = ip.node[0];
+            ip.last = ip.node[0] + seg_size;
+            ip.cur = ip.node[0] + it_offset;
             return ip;
         }
-        iterator operator- (const int & n) {
+        iterator operator- (const int & n) const {
             return (*this) + (-n);
         }
-        deque<T, Allocator>::difference_type operator- (const iterator & rhs)  {
-            return ((this->node - rhs.node) * deque<T, Allocator>::seg_size) - (this->cur - this->first) + (rhs.cur - rhs.first);
+        deque<T, Allocator>::difference_type operator- (const iterator & rhs) const {
+            difference_type node_diff = (this->node - rhs.node) * deque<T, Allocator>::seg_size;
+            difference_type this_offset =  this->cur - this->first;
+            difference_type rhs_offset = rhs.cur - rhs.first;
+            return node_diff + this_offset - rhs_offset;
         }
         iterator& operator+= (const int& n) {
             (*this) = (*this) + n;
@@ -117,23 +122,26 @@ public:
             (*this) = (*this) - n;
             return (*this);
         }
-        iterator& operator[] (const unsigned int& n) {
+        iterator& operator[] (const unsigned int& n) const {
             return *(*this + n);
         }
-        bool operator< (const iterator& rhs) {
+        bool operator< (const iterator& rhs) const {
             return ((*this) - rhs) < 0;
         }
-        bool operator<= (const iterator& rhs) {
+        bool operator<= (const iterator& rhs) const {
             return ((*this) - rhs) <= 0;
         }
-        bool operator> (const iterator& rhs) {
+        bool operator> (const iterator& rhs) const {
             return ((*this) - rhs) > 0;
         }
-        bool operator>= (const iterator& rhs) {
+        bool operator>= (const iterator& rhs) const {
             return ((*this) - rhs) > 0;
         }
-        bool operator== (const iterator& rhs) {
+        bool operator== (const iterator& rhs) const {
             return ((*this) - rhs) == 0;
+        }
+        bool operator!= (const iterator& rhs) const {
+            return ((*this) - rhs) != 0;
         }
     };
 
@@ -448,8 +456,9 @@ Allocator deque<T, Allocator>::get_allocator() const {
 
 template< class T, class Allocator >
 typename deque<T, Allocator>::reference deque<T, Allocator>::at( size_type pos ){
-    size_type map_offset = this->_first.cur - this->_first.first;
-    return this->_map[(pos + map_offset) / seg_size][(pos + map_offset) % seg_size];
+    size_type first_node_offset = this->_first.cur - this->_first.first;
+    size_type first_map_offset = this->_first.node - this->_map;
+    return this->_map[first_map_offset + ((pos + first_node_offset) / seg_size)][(pos + first_node_offset) % seg_size];
 }
 
 template< class T, class Allocator >
@@ -479,12 +488,12 @@ typename deque<T, Allocator>::const_reference deque<T, Allocator>::front() const
 
 template< class T, class Allocator >
 typename deque<T, Allocator>::reference deque<T, Allocator>::back() {
-    return *(this->_last);
+    return *(this->_last - 1);
 }
 
 template< class T, class Allocator >
 typename deque<T, Allocator>::const_reference deque<T, Allocator>::back() const {
-    return *(this->_last);
+    return *(this->_last - 1);
 }
 
 template< class T, class Allocator >
@@ -566,26 +575,32 @@ typename deque<T, Allocator>::iterator deque<T, Allocator>::insert( const_iterat
 
     iterator result;
     if(this->_last - pos <= pos - this->_first) {
-        _expand_back((count - (this->_last.last - this->_last.cur)) / seg_size);
+        if(count > this->_last.last - this->_last.cur) {
+            size_t expand_count = ((count - (this->_last.last - this->_last.cur)) / seg_size) + 1;
+            _expand_back(expand_count);
+        }
         iterator new_last = this->_last + count;
         const_iterator insert_part_last = pos + count;
         for(iterator it = new_last - 1; it != insert_part_last - 1; --it) {
             *(it) = *(it - count);
         }
         for(iterator it = insert_part_last - 1; it != pos - 1; --it) {
-            this->_alloc->construct(it.cur, value);
+            this->_alloc.construct(it.cur, value);
         }
         this->_last = new_last;
         result = pos;
     } else {
-        _expand_front((count - (this->_first.cur - this->_last.first)) / seg_size);
+        if(count > this->_first.cur - this->_last.first) {
+            size_t expand_count = ((count - (this->_first.cur - this->_last.first)) / seg_size) + 1;
+            _expand_front(expand_count);
+        }
         iterator new_first = this->_first - count;
         const_iterator insert_part_first = pos - count;
         for(iterator it = new_first; it != insert_part_first; ++it) {
             *(it) = *(it + count);
         }
         for(iterator it = insert_part_first; it != pos; ++it) {
-            this->_alloc->construct(it.cur, value);
+            this->_alloc.construct(it.cur, value);
         }
         this->_first = new_first;
         result = pos - count;
