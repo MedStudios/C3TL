@@ -7,6 +7,7 @@
 #include <deque.h>
 #include <stack.h>
 #include <queue.h>
+#include <functional.h>
 #include <algorithm.h>
 #include <iostream.h>
 
@@ -49,7 +50,7 @@ SCENARIO("VECTOR TESTS with v as a vector<int> object", "[vector]") {
                 REQUIRE(v.back() == i - 1);
             }
             v.pop_back();
-            REQUIRE( v.size() == 0 );
+            REQUIRE( v.empty() );
             REQUIRE( v.capacity() >= 0 );
         }
     }
@@ -65,7 +66,7 @@ SCENARIO("VECTOR TESTS with v as a vector<int> object", "[vector]") {
     WHEN( "the size is reduced" ) {
         v.resize( 0 );
         THEN( "the size changes but not capacity" ) {
-            REQUIRE( v.size() == 0 );
+            REQUIRE( v.empty() );
             REQUIRE( v.capacity() >= 16 );
         }
     }
@@ -114,8 +115,8 @@ SCENARIO("VECTOR TESTS with v as a vector<int> object", "[vector]") {
         }
     }
     
-    WHEN( "erasing from v.begin() + 3 to v.begin() + 6." ) {
-        v.erase(v.begin() + 3, v.begin() + 6);
+    WHEN( "erasing from v.begin() + 3 to v.end() - 10." ) {
+        v.erase(v.begin() + 3, v.end() - 10);
         THEN( "the size and capacity change, and v[0] - v[7] should be as expected" ) {
             REQUIRE( v.size() == 13);
             REQUIRE( v.capacity() >= 13);
@@ -130,122 +131,214 @@ SCENARIO("VECTOR TESTS with v as a vector<int> object", "[vector]") {
         }
     }
 }
-/*
-int main(void) {
 
-    // DEQUE tests
-    cout << "DEQUE TESTS with dq as a vector<int> object:" << endl;
-    deque<int> dq;
-    for(int i=0; i< 17; ++i) {
-        cout << "pushing back: " << i << endl;
+
+SCENARIO("DEQUE TESTS with dq as a deque<int> object", "[deque]") {
+    c3::deque<int> dq;
+    for(int i = 0; i < 16; ++i) {
         dq.push_back(i);
-        cout << "dq.front(): " << dq.front() << ", dq.back(): " << dq.back();
-        cout << ", dq.size(): " << dq.size() << endl;
     }
-    for(int i=0; i< 17; ++i) {
-        cout << "popping front."<< endl;
-        dq.pop_front();
-        cout << "dq.front(): " << dq.front() << ", dq.back(): " << dq.back();
-        cout << ", dq.size(): " << dq.size() << endl;
+    
+    REQUIRE( dq.size() == 16 );
+
+    WHEN( "pushing first from 0 to 15 and pushing back from 0 to -15" ) {
+        THEN( "dq.front() and dq.back() should be as expected" ) {
+            for (int i = 0; i < 16; ++i) {
+                dq.push_front(i);
+                dq.push_back(-i);
+                REQUIRE(dq.front() == i);
+                REQUIRE(dq.back() == -i);
+            }
+            REQUIRE( dq.size() == 48 );
+        }
     }
-    for(int i=100; i< 117; ++i) {
-        cout << "pushing front: " << i << endl;
-        dq.push_front(i);
-        cout << "dq.front(): " << dq.front() << ", dq.back(): " << dq.back();
-        cout << ", dq.size(): " << dq.size() << endl;
+
+    WHEN( "assigning dq 12 * integer 0x7FFFFFFF" ) {
+        dq.assign(12, 0x7FFFFFFF);
+        THEN( "the size change, and all elements in dq should equal to 0xFFFF" ) {
+            REQUIRE( dq.size() == 12 );
+            for(auto i : dq) {
+                REQUIRE( i == 0x7FFFFFFF );
+            }
+        }
     }
-    for(int i=100; i< 117; ++i) {
-        cout << "popping back."<< endl;
+
+    WHEN("popping front & back until dq is empty") {
+        THEN( "dq.front() and dq.back() should be as expected, and the size change" ) {
+            for (int i = 0; i < 8 - 1; ++i) {
+                dq.pop_front();
+                dq.pop_back();
+                REQUIRE(dq.front() == i + 1);
+                REQUIRE(dq.back() == 16 - i - 2);
+            }
+            dq.pop_front();
+            dq.pop_back();
+            REQUIRE( dq.empty() );
+        }
+    }
+
+    WHEN( "the size is increased" ) {
+        dq.resize( 32 );
+        THEN( "the size and capacity change" ) {
+            REQUIRE( dq.size() == 32 );
+        }
+    }
+
+    WHEN( "the size is reduced" ) {
+        dq.resize( 0 );
+        THEN( "the size changes but not capacity" ) {
+            REQUIRE( dq.empty() );
+        }
+    }
+
+    WHEN( "shrinking dq to fit" ) {
+        dq.push_back(1);
+        dq.push_back(2);
+        dq.push_back(3);
         dq.pop_back();
-        cout << "dq.front(): " << dq.front() << ", dq.back(): " << dq.back();
-        cout << ", dq.size(): " << dq.size() << endl;
+        dq.pop_back();
+        dq.pop_back();
+        dq.shrink_to_fit();
+        THEN( "the size does not change" ) {
+            REQUIRE( dq.size() == 16 );
+        }
     }
-    cout << "pushing back 0 to 16" << endl;
-    for(int i=0; i< 17; ++i) {
-        dq.push_back(i);
-    }
-    cout << "iterate from dq.begin() to dq.end():" << endl;
-    for(auto i = dq.begin(); i != dq.end(); ++i ) {
-        cout << *i << ", ";
-    }
-    cout << endl;
-    cout << "using \"for(int & i : dq)\":" << endl;
-    for(int & i : dq) {
-        cout << i << ", ";
-    }
-    cout << endl;
 
-    cout << "inserting 3 * -1 at dq.begin() + 2." << endl;
-    dq.insert(dq.begin() + 2, 3, -1);
-    cout << "dq[0] - dq[7]: ";
-    for(size_t i = 0; i < 8; ++i) {
-        cout << dq[i] << ", ";
+    WHEN( "inserting 3 * -1 at dq.begin() + 2" ) {
+        dq.insert(dq.begin() + 2, 3, -1);
+        THEN( "the size change, and dq[0] - dq[7] should be as expected" ) {
+            REQUIRE( dq.size() == 19);
+            REQUIRE( dq[0] == 0 );
+            REQUIRE( dq[1] == 1 );
+            REQUIRE( dq[2] == -1 );
+            REQUIRE( dq[3] == -1 );
+            REQUIRE( dq[4] == -1 );
+            REQUIRE( dq[5] == 2 );
+            REQUIRE( dq[6] == 3 );
+            REQUIRE( dq[7] == 4 );
+        }
     }
-    cout << endl;
-    cout << "dq.size(): " << dq.size() << endl;
-    cout << "erasing from dq.begin() + 3 to dq.begin() + 6." << endl;
-    dq.erase(dq.begin() + 3, dq.begin() + 6);
-    cout << "dq[0] - dq[7]: ";
-    for(size_t i = 0; i < 8; ++i) {
-        cout << dq[i] << ", ";
+    
+    WHEN( "erasing from dq.begin() + 3 to dq.end() - 10." ) {
+        dq.erase(dq.begin() + 3, dq.end() - 10);
+        THEN( "the size and capacity change, and dq[0] - dq[7] should be as expected" ) {
+            REQUIRE( dq.size() == 13);
+            REQUIRE( dq[0] == 0 );
+            REQUIRE( dq[1] == 1 );
+            REQUIRE( dq[2] == 2 );
+            REQUIRE( dq[3] == 6 );
+            REQUIRE( dq[4] == 7 );
+            REQUIRE( dq[5] == 8 );
+            REQUIRE( dq[6] == 9 );
+            REQUIRE( dq[7] == 10 );
+        }
     }
-    cout << endl;
-    cout << "dq.size(): " << dq.size() << endl;
-    cout << "END OF VECTOR TESTS." << endl << endl;
-
-
-    // STRING tests
-    cout << "STRING TESTS with str as a basic_string<char> (aka. string) object:" << endl;
-    cout << "str = \"Test string\";" << endl;
-    string str = "Test string";
-    cout << "str:" << str << endl;
-    cout << "str.append(\" is good\");" << endl;
-    str.append(" is good");
-    cout << "str: " << str << endl;
-    cout << "str2 = str + \", why?\";" << endl;
-    string str2 = str + ", why?";
-    cout << "str2: " << str2 << endl;
-    cout << "str2 += str + \" \";" << endl;
-    str2 += str + " ";
-    cout << "str2: " << str2 << endl << endl;
-
-    // ALGORITHM tests
-    cout << "ALGORITHM TESTS" << endl;
-    cout << "int arr[]={3, 9, 5, 1, 7};" << endl;
-    int arr[]={3, 9, 5, 1, 7};
-    cout << "sort arr." << endl;
-    sort(arr, arr+5);
-    cout << "arr after sort:" << endl;
-    for(int i : arr) {
-        cout << i << ", ";
-    }
-    cout << endl;
-    cout << "lower bound of 5 in arr:" << endl;
-    cout << *lower_bound(arr, arr+5, 5) << endl;
-    cout << "upper bound of 5 in arr:" << endl;
-    cout << *upper_bound(arr, arr+5, 6) << endl;
-    cout << "binary search for 5 in arr:" << endl;
-    cout << binary_search(arr, arr+5, 5) << endl;
-    cout << "binary search for 6 in arr:" << endl;
-    cout << binary_search(arr, arr+5, 6) << endl;
-    cout << "int arr2[]={0, 8, 4, 6, 2};" << endl;
-    int arr2[]={0, 8, 4, 6, 2};
-    cout << "sort arr2." << endl;
-    sort(arr2, arr2+5);
-    cout << "arr2 after sort:" << endl;
-    for(int i : arr2) {
-        cout << i << ", ";
-    }
-    cout << endl;
-    int arr3[10];
-    cout << "merge arr and arr2 into arr3." << endl;
-    merge(arr, arr+5, arr2, arr2+5, arr3);
-    cout << "arr3:" << endl;
-    for(int i : arr3) {
-        cout << i << ", ";
-    }
-    cout << endl;
-
-    return 0;
 }
-*/
+
+
+SCENARIO("STRING TESTS with str as a basic_string<char> (aka. string) object", "[string]") {
+    string str = "Test string";
+
+    WHEN("appending const char*") {
+        str.append(" is good");
+        THEN( "the contents should be as expected, and length change" ) {
+            REQUIRE( strcmp(str.c_str(), "Test string is good" ) == 0);
+            REQUIRE( str.length() == strlen("Test string is good"));
+        }
+    }
+
+    WHEN("str + const char*") {
+        string str2 = str + ", is it good?";
+        THEN( "the contents should be as expected, and length change" ) {
+            REQUIRE( strcmp(str2.c_str(), "Test string, is it good?" ) == 0);
+            REQUIRE( str2.length() == strlen("Test string, is it good?"));
+        }
+    }
+    
+    WHEN("str2 +=  str + const char*") {
+        string str2 = "Test string, ";
+        str2 += str + ", is it good?";
+        THEN( "the contents should be as expected, and length change" ) {
+            REQUIRE( strcmp(str2.c_str(), "Test string, Test string, is it good?" ) == 0);
+            REQUIRE( str2.length() == strlen("Test string, Test string, is it good?"));
+        }
+    }
+}
+
+
+SCENARIO("ALGORITHM TESTS", "[algo]") {
+    int arr[]={3, 9, 5, 1, 7};
+
+    WHEN("sort an int array, using default compare method(\"less than\")") {
+        sort(arr, arr+5);
+        THEN( "the array should be ascending" ) {
+            REQUIRE( (arr[0] == 1 && arr[1] == 3 && arr[2] == 5 && arr[3] == 7 && arr[4] == 9) );
+        }
+    }
+
+    WHEN("sort an int array, using c3::greater") {
+        sort(arr, arr+5, greater<int>());
+        THEN( "the array should be decending" ) {
+            REQUIRE( (arr[0] == 9 && arr[1] == 7 && arr[2] == 5 && arr[3] == 3 && arr[4] == 1) );
+        }
+    }
+    
+    WHEN("sort an int array, and find lower bound of 5") {
+        sort(arr, arr+5);
+        THEN( "should be 5" ) {
+            REQUIRE( *lower_bound(arr, arr+5, 5) == 5 );
+        }
+    }
+
+    WHEN("sort an int array with c3::greater, and find lower bound of 5") {
+        sort(arr, arr+5, greater<int>());
+        THEN( "should be 5" ) {
+            REQUIRE( *lower_bound(arr, arr+5, 5, greater<int>()) == 5 );
+        }
+    }    
+
+    WHEN("sort an int array, and find upper bound of 5") {
+        sort(arr, arr+5);
+        THEN( "should be 7" ) {
+            REQUIRE( *upper_bound(arr, arr+5, 5) == 7 );
+        }
+    }
+
+    WHEN("sort an int array with c3::greater, and find upper bound of 5") {
+        sort(arr, arr+5, greater<int>());
+        THEN( "should be 3" ) {
+            REQUIRE( *upper_bound(arr, arr+5, 5, greater<int>()) == 3 );
+        }
+    }
+    
+    WHEN("sort an int array, then binary search for 5 and 6") {
+        sort(arr, arr+5);
+        THEN( "search for 5 -> true, 6 -> false" ) {
+            REQUIRE( binary_search(arr, arr+5, 5) == true );
+            REQUIRE( binary_search(arr, arr+5, 6) == false );
+        }
+    }
+    
+    WHEN("sort an int array, then binary search for 5 and 6, using c3::greater") {
+        sort(arr, arr+5, greater<int>());
+        THEN( "search for 5 -> true, 6 -> false" ) {
+            REQUIRE( binary_search(arr, arr+5, 5, greater<int>()) == true );
+            REQUIRE( binary_search(arr, arr+5, 6, greater<int>()) == false );
+        }
+    }
+
+    WHEN("merge two arrays with unequal length into another array") {
+        int arr2[] = {0, 2, 4, 6, 8, 10, 11};
+        sort(arr, arr+5);
+        sort(arr2, arr2+7);
+        int arr3[12];
+        merge(arr, arr+5, arr2, arr2+7, arr3);
+        THEN( "merged array should be ascending" ) {
+            bool flag = true;
+            for(int i = 0; i < 12; ++i) {
+                flag = flag && (arr3[i] == i);
+            }
+            REQUIRE(flag);
+        }
+    }
+}
