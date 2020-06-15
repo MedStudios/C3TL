@@ -39,5 +39,5 @@ C3TL 提供了 C++11 STL 主要部分的类模板与函数模板，代码浅显�
 $ mkdir build && cd build
 $ cmake ..
 $ make
-$ ./C3TL
+$ ./C3TL-test
 ```
