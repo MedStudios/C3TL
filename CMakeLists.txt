@@ -41,5 +41,6 @@ endif()
 message(STATUS "The cmake_cxx_flags is: ${CMAKE_CXX_FLAGS}")
 
 aux_source_directory(${PROJECT_SOURCE_DIR} SOURCE_FILES)
+aux_source_directory(${PROJECT_SOURCE_DIR}/test SOURCE_FILES)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
