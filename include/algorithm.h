@@ -134,8 +134,8 @@ void sort( RandomIt first, RandomIt last, Compare comp )
         swap(*l, *r);
     }
     *l = base;
-    sort(first, l);
-    sort(r + 1, last);
+    sort(first, l, comp);
+    sort(r + 1, last, comp);
 }
 
 template< class RandomIt >
