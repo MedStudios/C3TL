@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 2.6)
 project(C3TL)
 
 # version
-set(C3TL_VERSION_MAJOR 0)
-set(C3TL_VERSION_MINOR 1)
-set(C3TL_VERSION_PATCH 0)
+set(C3TL_VERSION_MAJOR 1)
+set(C3TL_VERSION_MINOR 0)
+set(C3TL_VERSION_PATCH 1)
 set(C3TL_VERSION "${C3TL_VERSION_MAJOR}.${C3TL_VERSION_MINOR}.${C3TL_VERSION_PATCH}")
 message(STATUS "The version of this project is: ${C3TL_VERSION_VERSION}")
 
@@ -26,7 +26,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-   
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.3.0")
         message(FATAL_ERROR "required Clang 3.3 or later")
     else()
@@ -40,6 +39,9 @@ endif()
 
 message(STATUS "The cmake_cxx_flags is: ${CMAKE_CXX_FLAGS}")
 
-aux_source_directory(${PROJECT_SOURCE_DIR} SOURCE_FILES)
+# aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCE_FILES)
+aux_source_directory(${PROJECT_SOURCE_DIR}/test TEST_SOURCE_FILES)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+# add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME}-test ${TEST_SOURCE_FILES})
+

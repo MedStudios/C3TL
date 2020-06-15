@@ -339,12 +339,12 @@ vector<T, Allocator>& vector<T, Allocator>::operator=( std::initializer_list<T> 
     }
     this->_alloc.deallocate(this->_data, this->_capacity);
     this->_capacity = ilist.size();
-    this->_data = this->alloc.allocate(this->_capacity);
+    this->_data = this->_alloc.allocate(this->_capacity);
     for(size_t i = 0; i < ilist.size(); ++i) {
-        this->_alloc.construct(this->_data + i, ilist.data()[i]);
+        this->_alloc.construct(this->_data + i, *(ilist.begin() + i));
     }
     this->_size = ilist.size();
-    _reset_iters();;
+    _reset_iters();
     return *this;
 }
 
@@ -533,13 +533,16 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert( const_iter
     if (pos < this->_first || pos > this->_last)
         return const_cast<iterator>(pos);
 
+    // 因为下面的 reserve 可能会给内部元素数组换到一个新的地址，此时 pos 将失效，所以先记录 pos 到当前 _first 的偏移量
+    size_type offset = pos - this->_first;
+
     size_type new_cap = this->_capacity;
     while(new_cap < this->_size + count) {
         new_cap *= 2;
     }
     this->reserve(new_cap);
 
-    iterator insert_head = const_cast<iterator>(pos);
+    iterator insert_head = this->_first + offset;
     for(iterator it = insert_head; it != this->_last; ++it) {
         *(it + count) = *(it);
     }
@@ -582,6 +585,8 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::erase( const_itera
     size_type count = erase_last - erase_first;
     for(iterator it = erase_first; it < erase_last; ++it) {
         this->_alloc.destroy(it);
+    }
+    for(iterator it = erase_first; it < this->_last - count; ++it) {
         *(it) = *(it + count);
     }
     this->_size -= count;
@@ -633,7 +638,6 @@ void vector<T, Allocator>::resize( size_type count, const_reference value ) {
         for(unsigned int i = count; i < this->_size; ++i) {
             this->_alloc.destroy(this->_data + i);
         }
-        this->_size = count;
     } else if (count > this->_size) {
         size_type new_cap = this->_capacity;
         while(new_cap < count) {
@@ -644,6 +648,7 @@ void vector<T, Allocator>::resize( size_type count, const_reference value ) {
             this->_alloc.construct(this->_data + i, value);
         }
     }
+    this->_size = count;
     _reset_iters();
 }
 

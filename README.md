@@ -21,9 +21,15 @@ C3TL 提供了 C++11 STL 主要部分的类模板与函数模板，代码浅显�
 
 ### 工具
 
+构建工具：
  - CMake 2.6 及以上
 
    下载地址：https://cmake.org/download/
+
+单元测试工具：
+ - Catch 2.0.1 及以上
+ 
+   已经自带于 `test` 目录中 (`catch.hpp`)
 
 ### 脚本
 
