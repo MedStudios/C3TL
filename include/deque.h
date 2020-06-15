@@ -398,16 +398,17 @@ deque<T, Allocator>::deque( size_type count, const_reference value, const Alloca
     size_type map_size = count / seg_size + 1;
     this->_map = new pointer[map_size];
     for(size_type i = 0; i < map_size - 1; ++i) {
-        this->_alloc.allocate(this->_map[i], seg_size);
+        this->_map[i] = this->_alloc.allocate(seg_size);
         for(size_type j = 0; j < seg_size; ++j) {
             this->_alloc.construct(this->_map[i] + j, value);
         }
     }
-    this->_alloc.allocate(this->_map[map_size - 1], seg_size);
+    this->_map[map_size - 1] = this->_alloc.allocate(seg_size);
     for(size_type j = 0; j < count % seg_size; ++j) {
         this->_alloc.construct(this->_map[map_size - 1] + j, value);
     }
     this->_map_size = map_size;
+    this->_size = count;
 
     this->_first = iterator();
     this->_first.first = this->_map[0];
@@ -575,35 +576,45 @@ typename deque<T, Allocator>::iterator deque<T, Allocator>::insert( const_iterat
 
     iterator result;
     if(this->_last - pos <= pos - this->_first) {
+        // 因为下面的 _expand_back 可能会给内部元素数组换到一个新的地址，此时 pos 将失效，所以先记录 pos 到当前 _last 的偏移量
+        difference_type offset = pos - this->_first;
+
         if(count > this->_last.last - this->_last.cur) {
             size_t expand_count = ((count - (this->_last.last - this->_last.cur)) / seg_size) + 1;
             _expand_back(expand_count);
         }
+
+        const_iterator new_pos = this->_first + offset;
         iterator new_last = this->_last + count;
-        const_iterator insert_part_last = pos + count;
+        const_iterator insert_part_last = new_pos + count;
         for(iterator it = new_last - 1; it != insert_part_last - 1; --it) {
             *(it) = *(it - count);
         }
-        for(iterator it = insert_part_last - 1; it != pos - 1; --it) {
+        for(iterator it = insert_part_last - 1; it != new_pos - 1; --it) {
             this->_alloc.construct(it.cur, value);
         }
         this->_last = new_last;
-        result = pos;
+        result = new_pos;
     } else {
-        if(count > this->_first.cur - this->_last.first) {
+        // 因为下面的 _expand_back 可能会给内部元素数组换到一个新的地址，此时 pos 将失效，所以先记录 pos 到当前 _last 的偏移量
+        difference_type offset = this->_last - pos;
+
+        if(count > this->_first.cur - this->_first.first) {
             size_t expand_count = ((count - (this->_first.cur - this->_last.first)) / seg_size) + 1;
             _expand_front(expand_count);
         }
+
+        const_iterator new_pos = this->_last - offset;
         iterator new_first = this->_first - count;
-        const_iterator insert_part_first = pos - count;
+        const_iterator insert_part_first = new_pos - count;
         for(iterator it = new_first; it != insert_part_first; ++it) {
             *(it) = *(it + count);
         }
-        for(iterator it = insert_part_first; it != pos; ++it) {
+        for(iterator it = insert_part_first; it != new_pos; ++it) {
             this->_alloc.construct(it.cur, value);
         }
         this->_first = new_first;
-        result = pos - count;
+        result = new_pos - count;
     }
     this->_size += count;
     return result;
@@ -692,6 +703,7 @@ void deque<T, Allocator>::resize( size_type count, const_reference value ) {
             this->_alloc.construct((this->_last++).cur, value);
         }
     }
+    this->_size = count;
 }
 
 template< class T, class Allocator >
