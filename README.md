@@ -1,6 +1,6 @@
 # C3TL
 
-[![Build Status](https://travis-ci.org/MedStudios/C3TL.svg?branch=master)](https://travis-ci.org/MedStudios/C3TL) ![Travis (.org) branch](https://img.shields.io/travis/MedStudios/C3TL/dev?label=dev-build) ![GitHub](https://img.shields.io/github/license/MedStudios/C3TL)
+[![Build Status](https://travis-ci.org/MedStudios/C3TL.svg?branch=master)](https://travis-ci.org/MedStudios/C3TL) ![Travis (.org) branch](https://img.shields.io/travis/MedStudios/C3TL/dev?label=dev-build) [![codecov](https://codecov.io/gh/MedStudios/C3TL/branch/master/graph/badge.svg)](https://codecov.io/gh/MedStudios/C3TL) ![GitHub](https://img.shields.io/github/license/MedStudios/C3TL)
 
 C3TL | 一个 C++11 STL 的不完全实现
 
