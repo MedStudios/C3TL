@@ -7,13 +7,26 @@ set(C3TL_VERSION_MAJOR 1)
 set(C3TL_VERSION_MINOR 0)
 set(C3TL_VERSION_PATCH 1)
 set(C3TL_VERSION "${C3TL_VERSION_MAJOR}.${C3TL_VERSION_MINOR}.${C3TL_VERSION_PATCH}")
-message(STATUS "The version of this project is: ${C3TL_VERSION_VERSION}")
+message(STATUS "The version of this project is: ${C3TL_VERSION}")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+option(ENABLE_DEBUG "Enable debug build" ON)
+option(ENABLE_COVERAGE "Enable code coverage" OFF)
+
 # build type
-set(CMAKE_BUILD_TYPE debug)
+if(ENABLE_DEBUG)
+    set(CMAKE_BUILD_TYPE debug)
+else()
+    set(CMAKE_BUILD_TYPE release)
+endif()
 message(STATUS "The build type is: ${CMAKE_BUILD_TYPE}")
+
+# codecov
+if(ENABLE_COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
+message(STATUS "Enable code coverage: " ${ENABLE_COVERAGE})
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.8.1")
